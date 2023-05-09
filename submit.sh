@@ -13,8 +13,9 @@
 #SBATCH --time 3-0:00
 
 ### Numero de procesos a ser lanzados.
-#SBATCH --ntasks=112
+#SBATCH --ntasks=56
 #SBATCH --nodes=2
+#SBATCH --cpus-per-task=1
 
 ### Nombre de partcion
 #SBATCH --partition=batch

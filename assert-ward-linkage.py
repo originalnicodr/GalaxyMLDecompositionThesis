@@ -190,7 +190,6 @@ def draw_2d_graph(gal, labels, comp, title, save_path):
 
 
 
-# %%time
 # Split the dataset in two equal parts
 # X_train, X_test, y_train, y_test = train_test_split(
 #    X, y, test_size=0.2, random_state=0)
@@ -214,10 +213,12 @@ def get_galaxy_data(path):  # tests/datasets/gal394242.h5
 
 def dump_results(X, labels, path):
     #Doble check que los nombres de las columnas esten bien
-    eps = [item for sublist in X[:, (0,)] for item in sublist]
-    eps_r = [item for sublist in X[:, (1,)] for item in sublist]
-    normalized_star_energy = [item for sublist in X[:, (2,)] for item in sublist]
-    data_to_graph = pd.DataFrame({'eps': eps, 'eps_r': eps_r, 'normalized_star_energy': normalized_star_energy, 'label': labels})
+
+    #eps = [item for sublist in X[:, (0,)] for item in sublist]
+    #eps_r = [item for sublist in X[:, (1,)] for item in sublist]
+    #normalized_star_energy = [item for sublist in X[:, (2,)] for item in sublist]
+    #data_to_graph = pd.DataFrame({'eps': eps, 'eps_r': eps_r, 'normalized_star_energy': normalized_star_energy, 'label': labels})
+    data_to_graph = pd.DataFrame({'label': labels})
     
     joblib.dump(data_to_graph, path+'.data', compress=3)
 
@@ -231,7 +232,7 @@ def my_davies_bouldin_score(model, X):
     return davies_bouldin_score(X, preds)
 
 def analyze_galaxy_2_clusters_linkages(
-    file_name, dataset_directory, results_path="results"
+    file_name, dataset_directory, arg_linkage, results_path="results"
 ):
     print("Getting galaxy data")
     gal, X = get_galaxy_data(dataset_directory + "/" + file_name)
@@ -247,7 +248,9 @@ def analyze_galaxy_2_clusters_linkages(
 
     #comp = gchop.models.AutoGaussianMixture(n_jobs=-1).decompose(gal)
 
-    for linkage in ["ward", "single", "complete", "average"]:
+    linkages = [arg_linkage] if arg_linkage is not None else ["ward", "single", "complete", "average"]
+
+    for linkage in linkages:
         clustering_model = AgglomerativeClustering(n_clusters=2, linkage=linkage)
         print("Fitting the model on the galaxy")
         # del
@@ -276,9 +279,9 @@ def analyze_galaxy_2_clusters_linkages(
             print("Davies Bouldin: ", internal_evaluation.davies_bouldin(labels), "\n")
             f.write(f"Davies Bouldin: {internal_evaluation.davies_bouldin(labels)}\n\n")
 
-            draw_3d_graph(X, labels, f'{file_name} - 2 clusters - {linkage}', f'{results_path}/{file_name}/{linkage} - 2 clusters')
-            draw_2d_graph(gal, labels, comp, f'{file_name} - 2 clusters - {linkage}', f'{results_path}/{file_name}/{linkage} - 2 clusters')
             dump_results(X, labels, f'{results_path}/{file_name}/{linkage}')
+            #draw_3d_graph(X, labels, f'{file_name} - 2 clusters - {linkage}', f'{results_path}/{file_name}/{linkage} - 2 clusters')
+            #draw_2d_graph(gal, labels, comp, f'{file_name} - 2 clusters - {linkage}', f'{results_path}/{file_name}/{linkage} - 2 clusters')  
 
         del clustering_model
         del labels
@@ -298,19 +301,19 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
+    ap.add_argument("-l", "--linkage", required=False, help="Linkage that we will be analyzing")
     args = vars(ap.parse_args())
 
     galaxy_name = args.get("galaxyname")
+    linkage = args.get("linkage")
 
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_2_clusters_linkages(galaxy_name, directory_name)
+        analyze_galaxy_2_clusters_linkages(galaxy_name, directory_name, linkage)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
             for file_name in filenames:
                 print(f"analizing galaxy: {file_name}")
-                analyze_galaxy_2_clusters_linkages(file_name, directory_name)
-
-# %%
+                analyze_galaxy_2_clusters_linkages(file_name, directory_name, linkage)
