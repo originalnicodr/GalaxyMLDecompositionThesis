@@ -115,78 +115,77 @@ def draw_2d_graph(gal, labels, comp, title, save_path):
     import seaborn as sns
     
     #Tenemos que crear dos graficas con cada color_map para asegurarnos de tener al menos una grafica correcta.
-    palette1 = {"0 - Spheroid": 'red', "1 - Disk": 'blue'}
-    palette2 = {"0 - Disk": 'blue', "1 - Spheroid": 'red'}
-    #palette1 = {0:"red", 1:"blue"}
-    #palette2 = {1:"red", 0:"blue"}
+    palette = {"Spheroid": 'red', "Disk": 'blue'}
+    lmap1 = {1: "Spheroid", 0: "Disk"}
+    lmap2 = {0: "Spheroid", 1: "Disk"}
 
     labels_with_nans = create_labels_for_comp(comp, labels)
 
-    #------------------pairpplot palette1------------
-    sns_plot1 = gal.plot.pairplot(attributes=["x", "y", "z"], labels=labels_with_nans, palette = palette1, plot_kws={'alpha': 0.7}, lmap={1: "0 - Spheroid", 0: "1 - Disk"})
-    sns.move_legend(sns_plot1, "center left", bbox_to_anchor=(1, 0.5))
-    fig1 = sns_plot1.fig
-    fig1.suptitle(title)
-    for ax in fig1.axes:
-        ax.set_xlim([-20,20])
-        ax.set_ylim([-20,20])
-    fig1.tight_layout()
-    fig1.savefig(save_path+'- pairplot - palette1.png', bbox_inches='tight')
+    print("graficando")
 
-    #------------------pairpplot palette2------------
-    sns_plot1 = gal.plot.pairplot(attributes=["x", "y", "z"], labels=labels_with_nans, palette = palette2, plot_kws={'alpha': 0.7}, lmap={1: "0 - Disk", 0: "1 - Spheroid"})
-    sns.move_legend(sns_plot1, "center left", bbox_to_anchor=(1, 0.5))
-    fig1 = sns_plot1.fig
-    fig1.suptitle(title)
-    for ax in fig1.axes:
-        ax.set_xlim([-20,20])
-        ax.set_ylim([-20,20])
-    fig1.tight_layout()
-    fig1.savefig(save_path+'- pairplot - palette2.png', bbox_inches='tight')
-    
-    #------------------circ_pairplot palette1------------
-    sns_plot2 = gal.plot.circ_pairplot(labels=labels_with_nans, attributes=['normalized_star_energy', 'eps', 'eps_r'], palette = palette1, plot_kws={'alpha': 0.7}, lmap={1: "0 - Spheroid", 0: "1 - Disk"})
+    #------------------circ_pairplot lmap1------------
+    sns_plot2 = gal.plot.circ_pairplot(labels=labels_with_nans, attributes=['normalized_star_energy', 'eps', 'eps_r'], palette = palette, plot_kws={'alpha': 0.7}, lmap=lmap1, hue_order=["Spheroid", "Disk"])
     sns.move_legend(sns_plot2, "center left", bbox_to_anchor=(1, 0.5))
     fig2 = sns_plot2.fig
+
+    for i in range(0, 3):
+        for j in range(0, 3):
+            if i<j:
+                fig2.delaxes(sns_plot2.axes[i, j])
+
     fig2.suptitle(title)
     fig2.tight_layout()
-    fig2.savefig(save_path+'- circ_pairplot - palette1.png', bbox_inches='tight')
+    fig2.savefig(save_path+'- circ_pairplot - lmap1.png', bbox_inches='tight')
     
-    #------------------circ_pairplot palette1------------
-    sns_plot2 = gal.plot.circ_pairplot(labels=labels_with_nans, attributes=['normalized_star_energy', 'eps', 'eps_r'], palette = palette2, plot_kws={'alpha': 0.7}, lmap={1: "0 - Disk", 0: "1 - Spheroid"})
+    #------------------circ_pairplot lmap2------------
+    sns_plot2 = gal.plot.circ_pairplot(labels=labels_with_nans, attributes=['normalized_star_energy', 'eps', 'eps_r'], palette = palette, plot_kws={'alpha': 0.7}, lmap=lmap2, hue_order=["Spheroid", "Disk"])
     sns.move_legend(sns_plot2, "center left", bbox_to_anchor=(1, 0.5))
     fig2 = sns_plot2.fig
+
+    for i in range(0, 3):
+        for j in range(0, 3):
+            if i<j:
+                fig2.delaxes(sns_plot2.axes[i, j])
+
     fig2.suptitle(title)
     fig2.tight_layout()
-    fig2.savefig(save_path+'- circ_pairplot - palette2.png', bbox_inches='tight')
+    fig2.savefig(save_path+'- circ_pairplot - lmap2.png', bbox_inches='tight')
+
 
     #------------histogram palette 1-----------------------
-    sns_plot3 = gal.plot.pairplot(attributes=['x', 'y','z'], labels=labels_with_nans, palette=palette1, lmap={1: "0 - Spheroid", 0: "1 - Disk"})
+    sns_plot3 = gal.plot.pairplot(attributes=['x', 'y','z'], labels=labels_with_nans, palette=palette, plot_kws={'alpha': 0.7}, lmap=lmap1, hue_order=["Spheroid", "Disk"])
     sns.move_legend(sns_plot3, "center left", bbox_to_anchor=(1, 0.5))
+    fig3 = sns_plot3.fig
+
     for i in range(0, 3):
         for j in range(0, 3):
             sns_plot3.axes[i, j].set_xlim((-20,20))
             if i!=j:
                 sns_plot3.axes[i, j].set_ylim((-20,20))
+            if i<j:
+                fig3.delaxes(sns_plot3.axes[i, j])
 
     fig3 = sns_plot3.fig
     fig3.suptitle(title)
     fig3.tight_layout()
-    fig3.savefig(save_path+'- histogram - palette1.png', bbox_inches='tight')
+    fig3.savefig(save_path+'- histogram - lmap1.png', bbox_inches='tight')
 
     #------------histogram palette 2-----------------------
-    sns_plot3 = gal.plot.pairplot(attributes=['x', 'y','z'], labels=labels_with_nans, palette=palette2, lmap={1: "0 - Disk", 0: "1 - Spheroid"})
+    sns_plot3 = gal.plot.pairplot(attributes=['x', 'y','z'], labels=labels_with_nans, palette=palette, plot_kws={'alpha': 0.7}, lmap=lmap2, hue_order=["Spheroid", "Disk"])
     sns.move_legend(sns_plot3, "center left", bbox_to_anchor=(1, 0.5))
+    fig3 = sns_plot3.fig
+
     for i in range(0, 3):
         for j in range(0, 3):
             sns_plot3.axes[i, j].set_xlim((-20,20))
             if i!=j:
                 sns_plot3.axes[i, j].set_ylim((-20,20))
+            if i<j:
+                fig3.delaxes(sns_plot3.axes[i, j])
 
-    fig3 = sns_plot3.fig
     fig3.suptitle(title)
     fig3.tight_layout()
-    fig3.savefig(save_path+'- histogram - palette2.png', bbox_inches='tight')
+    fig3.savefig(save_path+'- histogram - lmap2.png', bbox_inches='tight')
 
 
 
@@ -199,7 +198,7 @@ def draw_2d_graph(gal, labels, comp, title, save_path):
 
 
 def get_galaxy_data(path):  # tests/datasets/gal394242.h5
-    gal = gchop.preproc.center_and_align(gchop.io.read_hdf5(path))
+    gal = gchop.preproc.center_and_align(gchop.io.read_hdf5(path), r_cut=30)
     circ = gchop.preproc.jcirc(gal)
     df = pd.DataFrame(
         {
