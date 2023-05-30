@@ -22,8 +22,8 @@ def update_comp_labels(comp, labels):
     return gchop.models.Components(labels_with_nans, comp.ptypes, comp.m, comp.lmap, comp.probabilities, comp.attributes, comp.x_clean, comp.rows_mask)
 
 def get_lmap(labels_map, n):
-    lmap1 = {1: "Spheroid", 0: "Disk"}
-    lmap2 = {0: "Spheroid", 1: "Disk"}
+    lmap1 = {0: "Spheroid", 1: "Disk"}
+    lmap2 = {1: "Spheroid", 0: "Disk"}
     maps = [lmap1, lmap2]
 
     return maps[int(labels_map[n])]
@@ -35,68 +35,75 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     palette = {"Spheroid": 'red', "Disk": 'blue'}
 
     print("graficando real scatterplot")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=True, sharey=True)
+    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
 
     #-------------Abadi---------------
-    axs[0,0].set_ylabel("Abadi")
+    plt.text(-0.15, 0.8, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], abadi_comp, lmap=get_lmap(labels_map, 0))
 
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[0,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[0,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[0,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-
-    #-------------Average---------------
-    axs[1,0].set_ylabel("Average")
-
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=get_lmap(labels_map, 1))
-
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-
-    #-------------Single---------------
-    axs[2,0].set_ylabel("Single")
-    
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=get_lmap(labels_map, 2))
-
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    plot_with_legend = sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[2,2], legend=True, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    
-    #-------------Complete---------------
-    axs[3,0].set_ylabel("Complete")
-
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=get_lmap(labels_map, 3))
-
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
+    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[0,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[0,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[0,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
 
     #-------------Ward---------------
-    axs[4,0].set_ylabel("Ward")
+    plt.text(-0.15, 0.65, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
     df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=get_lmap(labels_map, 4))
 
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[4,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
+    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"], kde=True)
+    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"], kde=True)
+    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"], kde=True)
 
-    axs[-1,0].set_xlabel("XY")
-    axs[-1,1].set_xlabel("YZ")
-    axs[-1,2].set_xlabel("XZ")
+    #-------------Complete---------------
+    plt.text(-0.15, 0.5, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=get_lmap(labels_map, 2))
+
+    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+
+    #-------------Average---------------
+    plt.text(-0.15, 0.35, "Average", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=get_lmap(labels_map, 3))
+
+    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+
+    #-------------Single---------------
+    plt.text(-0.15, 0.2, "Single", fontsize=14, transform=plt.gcf().transFigure)
+    
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=get_lmap(labels_map, 4))
+
+    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    plot_with_legend = sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
 
     for ax in fig.axes:
         ax.set_xlim([-20,20])
         ax.set_ylim([-20,20])
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
+        #ax.set_xticklabels([])
+        #ax.set_yticklabels([])
+        #ax.tick_params(axis='both', labelleft=True, labelbottom=True)
+        from matplotlib.ticker import MultipleLocator
+        ax.xaxis.set_minor_locator(MultipleLocator(2))
+        ax.yaxis.set_minor_locator(MultipleLocator(2))
+        ax.tick_params(axis='both', labelleft=True, labelbottom=False)
     
-    plt.subplots_adjust(wspace=0, hspace=0)
+    fig.axes[12].tick_params(axis='x', labelbottom=True)
+    fig.axes[13].tick_params(axis='x', labelbottom=True)
+    fig.axes[14].tick_params(axis='x', labelbottom=True)
+    
+    plt.subplots_adjust(wspace=0.5, hspace=0.1)
+    ##plt.subplots_adjust(wspace=0.3, hspace=0.3)
 
-    sns.move_legend(plot_with_legend, "center right", bbox_to_anchor=(2, 0.5))
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9))
 
     fig.suptitle(title)
+    fig.set_figwidth(7)
 
     fig.savefig(save_path+' - scatterplot.png', bbox_inches='tight', dpi=300)
 
@@ -107,10 +114,10 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     palette = {"Spheroid": 'red', "Disk": 'blue'}
 
     print("graficando real hist")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=True, sharey=True)
+    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
 
     #-------------Abadi---------------
-    axs[0,0].set_ylabel("Abadi")
+    plt.text(-0.15, 0.8, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], abadi_comp, lmap=get_lmap(labels_map, 0))
 
@@ -118,54 +125,81 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     sns.histplot(x="y", hue=hue, data=df, ax=axs[0,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="z", hue=hue, data=df, ax=axs[0,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    #-------------Average---------------
-    axs[1,0].set_ylabel("Average")
+    axs[0,1].set_ylabel("")
+    axs[0,2].set_ylabel("")
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=get_lmap(labels_map, 1))
+    #-------------Ward---------------
+    plt.text(-0.15, 0.65, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=get_lmap(labels_map, 1))
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="y", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    #-------------Single---------------
-    axs[2,0].set_ylabel("Single")
-    
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=get_lmap(labels_map, 2))
+    axs[1,1].set_ylabel("")
+    axs[1,2].set_ylabel("")
+
+    #-------------Complete---------------
+    plt.text(-0.15, 0.5, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=get_lmap(labels_map, 2))
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="y", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    plot_with_legend = sns.histplot(x="z", hue=hue, data=df, ax=axs[2,2], legend=True, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    
-    #-------------Complete---------------
-    axs[3,0].set_ylabel("Complete")
+    sns.histplot(x="z", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=get_lmap(labels_map, 3))
+    axs[2,1].set_ylabel("")
+    axs[2,2].set_ylabel("")
+
+    #-------------Average---------------
+    plt.text(-0.15, 0.35, "Average", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=get_lmap(labels_map, 3))
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="y", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="z", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    #-------------Ward---------------
-    axs[4,0].set_ylabel("Ward")
+    axs[3,1].set_ylabel("")
+    axs[3,2].set_ylabel("")
+
+    #-------------Single---------------
+    plt.text(-0.15, 0.2, "Single", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=get_lmap(labels_map, 4))
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=get_lmap(labels_map, 4))
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="y", hue=hue, data=df, ax=axs[4,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
+    plot_with_legend = sns.histplot(x="y", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="z", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    axs[-1,0].set_xlabel("X")
-    axs[-1,1].set_xlabel("Y")
-    axs[-1,2].set_xlabel("Z")
+    axs[4,1].set_ylabel("")
+    axs[4,2].set_ylabel("")
+
+    axs[4,0].set_xlabel("x")
+    axs[4,1].set_xlabel("y")
+    axs[4,2].set_xlabel("z")
 
     for ax in fig.axes:
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-    plt.subplots_adjust(wspace=0, hspace=0)
+        #ax.set_xticklabels([])
+        #ax.set_yticklabels([])
+        ax.set_xlim([-20,20])
+        from matplotlib.ticker import MultipleLocator
+        ax.xaxis.set_minor_locator(MultipleLocator(25))
+        ax.yaxis.set_minor_locator(MultipleLocator(25))
+    
+        ax.tick_params(axis='both', labelleft=True, labelbottom=False)
+    
+    fig.axes[12].tick_params(axis='x', labelbottom=True)
+    fig.axes[13].tick_params(axis='x', labelbottom=True)
+    fig.axes[14].tick_params(axis='x', labelbottom=True)
 
-    sns.move_legend(plot_with_legend, "center right", bbox_to_anchor=(2, 0.5))
+    plt.subplots_adjust(wspace=0.3, hspace=0.1)
+
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9))
 
     fig.suptitle(title)
+    fig.set_figwidth(7)
 
     fig.savefig(save_path+' - histogram.png', bbox_inches='tight', dpi=300)
 
@@ -179,70 +213,88 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     palette = {"Spheroid": 'red', "Disk": 'blue'}
 
     print("graficando circ scatterplot")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=True, sharey=True)
+    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
 
     #-------------Abadi---------------
-    axs[0,0].set_ylabel("Abadi")
+    plt.text(-0.15, 0.8, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], abadi_comp, lmap=get_lmap(labels_map, 0))
 
+    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[0,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[0,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[0,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
 
-    sns.histplot(x="eps", y="eps_r", hue=hue, data=df, ax=axs[0,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps_r", y="normalized_star_energy", hue=hue, data=df, ax=axs[0,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps", y="normalized_star_energy", hue=hue, data=df, ax=axs[0,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-
-    #-------------Average---------------
-    axs[1,0].set_ylabel("Average")
-
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=get_lmap(labels_map, 1))
-
-
-    sns.histplot(x="eps", y="eps_r", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps_r", y="normalized_star_energy", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps", y="normalized_star_energy", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-
-    #-------------Single---------------
-    axs[2,0].set_ylabel("Single")
-    
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=get_lmap(labels_map, 2))
-
-
-    sns.histplot(x="eps", y="eps_r", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps_r", y="normalized_star_energy", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    plot_with_legend = sns.histplot(x="eps", y="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=True, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    
-    #-------------Complete---------------
-    axs[3,0].set_ylabel("Complete")
-
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=get_lmap(labels_map, 3))
-
-
-    sns.histplot(x="eps", y="eps_r", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps_r", y="normalized_star_energy", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps", y="normalized_star_energy", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
+    axs[0,0].set_xlabel("", fontsize=10)
+    axs[0,1].set_xlabel("", fontsize=10)
+    axs[0,2].set_xlabel("", fontsize=10)
 
     #-------------Ward---------------
-    axs[4,0].set_ylabel("Ward")
+    plt.text(-0.15, 0.65, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=get_lmap(labels_map, 4))
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=get_lmap(labels_map, 1))
 
+    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
 
-    sns.histplot(x="eps", y="eps_r", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps_r", y="normalized_star_energy", hue=hue, data=df, ax=axs[4,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps", y="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
+    axs[1,0].set_xlabel("", fontsize=10)
+    axs[1,1].set_xlabel("", fontsize=10)
+    axs[1,2].set_xlabel("", fontsize=10)
 
-    axs[-1,0].set_xlabel("eps,\n eps_r", fontsize=10)
-    axs[-1,1].set_xlabel("eps_r,\n normalized_star_energy", fontsize=8)
-    axs[-1,2].set_xlabel("eps,\n normalized_star_energy", fontsize=8)
+    #-------------Complete---------------
+    plt.text(-0.15, 0.5, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=get_lmap(labels_map, 2))
+
+    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+
+    axs[2,0].set_xlabel("", fontsize=10)
+    axs[2,1].set_xlabel("", fontsize=10)
+    axs[2,2].set_xlabel("", fontsize=10)
+
+    #-------------Average---------------
+    plt.text(-0.15, 0.35, "Average", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=get_lmap(labels_map, 3))
+
+    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+
+    axs[3,0].set_xlabel("", fontsize=10)
+    axs[3,1].set_xlabel("", fontsize=10)
+    axs[3,2].set_xlabel("", fontsize=10)
+
+    #-------------Single---------------
+    plt.text(-0.15, 0.2, "Single", fontsize=14, transform=plt.gcf().transFigure)
+    
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=get_lmap(labels_map, 4))
+
+    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    plot_with_legend = sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
 
     for ax in fig.axes:
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-    plt.subplots_adjust(wspace=0, hspace=0)
+        #ax.set_xticklabels([])
+        #ax.set_yticklabels([])
+        from matplotlib.ticker import MultipleLocator
+        ax.xaxis.set_minor_locator(MultipleLocator(0.25))
+        ax.yaxis.set_minor_locator(MultipleLocator(0.25))
+        ax.tick_params(axis='both', labelleft=True, labelbottom=False)
+    
+    fig.axes[12].tick_params(axis='x', labelbottom=True)
+    fig.axes[13].tick_params(axis='x', labelbottom=True)
+    fig.axes[14].tick_params(axis='x', labelbottom=True)
 
-    sns.move_legend(plot_with_legend, "center right", bbox_to_anchor=(2, 0.5))
+    plt.subplots_adjust(wspace=0.5, hspace=0.1)
+
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9))
 
     fig.suptitle(title)
+    #fig.set_figheight(15)
+    fig.set_figwidth(7)
 
     fig.savefig(save_path+' - circ scatterplot.png', bbox_inches='tight', dpi=300)
 
@@ -253,10 +305,10 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     palette = {"Spheroid": 'red', "Disk": 'blue'}
 
     print("graficando circ hist")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=True, sharey=True)
+    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
 
     #-------------Abadi---------------
-    axs[0,0].set_ylabel("Abadi")
+    plt.text(-0.15, 0.8, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], abadi_comp, lmap=get_lmap(labels_map, 0))
 
@@ -264,57 +316,82 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[0,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[0,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    #-------------Average---------------
-    axs[1,0].set_ylabel("Average")
+    axs[0,1].set_ylabel("", fontsize=10)
+    axs[0,2].set_ylabel("", fontsize=10)
+    axs[0,2].set_xlabel("", fontsize=10)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=get_lmap(labels_map, 1))
+    #-------------Ward---------------
+    plt.text(-0.15, 0.65, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=get_lmap(labels_map, 1))
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    #-------------Single---------------
-    axs[2,0].set_ylabel("Single")
-    
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=get_lmap(labels_map, 2))
+    axs[1,1].set_ylabel("", fontsize=10)
+    axs[1,2].set_ylabel("", fontsize=10)
+    axs[1,2].set_xlabel("", fontsize=10)
 
+    #-------------Complete---------------
+    plt.text(-0.15, 0.5, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=get_lmap(labels_map, 2))
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    plot_with_legend = sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=True, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    
-    #-------------Complete---------------
-    axs[3,0].set_ylabel("Complete")
+    sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=get_lmap(labels_map, 3))
+    axs[2,1].set_ylabel("", fontsize=10)
+    axs[2,2].set_ylabel("", fontsize=10)
+    axs[2,2].set_xlabel("", fontsize=10)
 
+    #-------------Average---------------
+    plt.text(-0.15, 0.35, "Average", fontsize=14, transform=plt.gcf().transFigure)
+
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=get_lmap(labels_map, 3))
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    #-------------Ward---------------
-    axs[4,0].set_ylabel("Ward")
-    
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=get_lmap(labels_map, 4))
+    axs[3,1].set_ylabel("", fontsize=10)
+    axs[3,2].set_ylabel("", fontsize=10)
+    axs[3,2].set_xlabel("", fontsize=10)
 
+    #-------------Single---------------
+    plt.text(-0.15, 0.2, "Single", fontsize=14, transform=plt.gcf().transFigure)
+    
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=get_lmap(labels_map, 4))
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
-    sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[4,1], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
+    plot_with_legend = sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
     sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=["Spheroid", "Disk"])
 
-    axs[-1,0].set_xlabel("eps")
-    axs[-1,1].set_xlabel("eps_r")
-    axs[-1,2].set_xlabel("normalized_star_energy")
+
+    axs[4,1].set_ylabel("", fontsize=10)
+    axs[4,2].set_ylabel("", fontsize=10)
+
+    axs[4,0].set_xlabel("eps")
+    axs[4,1].set_xlabel("eps_r")
+    axs[4,2].set_xlabel("normalized_star_energy")
 
     for ax in fig.axes:
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-    plt.subplots_adjust(wspace=0, hspace=0)
+        from matplotlib.ticker import MultipleLocator
+        ax.xaxis.set_minor_locator(MultipleLocator(0.25))
+        ax.yaxis.set_minor_locator(MultipleLocator(25))
+        ax.tick_params(axis='both', labelleft=True, labelbottom=False)
+    
+    fig.axes[12].tick_params(axis='x', labelbottom=True)
+    fig.axes[13].tick_params(axis='x', labelbottom=True)
+    fig.axes[14].tick_params(axis='x', labelbottom=True)
 
-    sns.move_legend(plot_with_legend, "center right", bbox_to_anchor=(2, 0.5))
+    plt.subplots_adjust(wspace=0.3, hspace=0.1)
+
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9))
 
     fig.suptitle(title)
+    fig.set_figwidth(7)
 
     fig.savefig(save_path+' - circ histogram.png', bbox_inches='tight', dpi=300)
 
@@ -416,10 +493,10 @@ def plot_gal(gal_name, dataset_directory, labels_map, real_space_only, results_p
     abadi_labels = read_labels_from_file(gal_name, "Abadi", results_path)
     abadi_comp = build_comp(gal, abadi_labels)
 
-    draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
+    #draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
     if not real_space_only:
-        draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
-        draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
+        #draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
+        #draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
         draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
 
 
