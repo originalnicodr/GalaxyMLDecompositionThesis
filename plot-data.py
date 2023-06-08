@@ -232,6 +232,9 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     axs[0,1].set_xlabel("", fontsize=10)
     axs[0,2].set_xlabel("", fontsize=10)
 
+    axs[0,0].set_xlim([0, 1.5])
+    axs[0,1].set_ylim([0, 1.5])
+
     #-------------Ward---------------
     plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
@@ -244,6 +247,9 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     axs[1,0].set_xlabel("", fontsize=10)
     axs[1,1].set_xlabel("", fontsize=10)
     axs[1,2].set_xlabel("", fontsize=10)
+
+    axs[1,0].set_xlim([0, 1.5])
+    axs[1,1].set_ylim([0, 1.5])
 
     #-------------Complete---------------
     plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
@@ -258,6 +264,9 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     axs[2,1].set_xlabel("", fontsize=10)
     axs[2,2].set_xlabel("", fontsize=10)
 
+    axs[2,0].set_xlim([0, 1.5])
+    axs[2,1].set_ylim([0, 1.5])
+
     #-------------Average---------------
     plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
@@ -271,6 +280,9 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     axs[3,1].set_xlabel("", fontsize=10)
     axs[3,2].set_xlabel("", fontsize=10)
 
+    axs[3,0].set_xlim([0, 1.5])
+    axs[3,1].set_ylim([0, 1.5])
+
     #-------------Single---------------
     plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
     
@@ -279,6 +291,9 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
     plot_with_legend = sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
     sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=["Disk", "Spheroid"])
+
+    axs[4,0].set_xlim([0, 1.5])
+    axs[4,1].set_ylim([0, 1.5])
 
     for ax in fig.axes:
         #ax.set_xticklabels([])
@@ -325,6 +340,8 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     axs[0,2].set_ylabel("", fontsize=10)
     axs[0,2].set_xlabel("", fontsize=10)
 
+    axs[0,1].set_xlim([0, 1.5])
+
     #-------------Ward---------------
     plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
@@ -337,6 +354,8 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     axs[1,1].set_ylabel("", fontsize=10)
     axs[1,2].set_ylabel("", fontsize=10)
     axs[1,2].set_xlabel("", fontsize=10)
+
+    axs[1,1].set_xlim([0, 1.5])
 
     #-------------Complete---------------
     plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
@@ -351,6 +370,8 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     axs[2,2].set_ylabel("", fontsize=10)
     axs[2,2].set_xlabel("", fontsize=10)
 
+    axs[2,1].set_xlim([0, 1.5])
+
     #-------------Average---------------
     plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
@@ -363,6 +384,8 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     axs[3,1].set_ylabel("", fontsize=10)
     axs[3,2].set_ylabel("", fontsize=10)
     axs[3,2].set_xlabel("", fontsize=10)
+
+    axs[3,1].set_xlim([0, 1.5])
 
     #-------------Single---------------
     plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
@@ -380,6 +403,8 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     axs[4,0].set_xlabel("eps")
     axs[4,1].set_xlabel("eps_r")
     axs[4,2].set_xlabel("normalized_star_energy")
+
+    axs[4,1].set_xlim([0, 1.5])
 
     for ax in fig.axes:
         from matplotlib.ticker import MultipleLocator
