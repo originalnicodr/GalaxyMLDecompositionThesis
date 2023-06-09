@@ -197,8 +197,14 @@ def draw_2d_graph(gal, labels, comp, title, save_path):
 
 
 
-def get_galaxy_data(path):  # tests/datasets/gal394242.h5
+def get_galaxy_data(path, results_path, file_name):  # tests/datasets/gal394242.h5
     gal = gchop.preproc.center_and_align(gchop.io.read_hdf5(path), r_cut=30)
+
+    cut_idxs = read_cut_idxs(file_name, results_path)
+    if not cut_idxs is None:
+        print("Removing outliers")
+        gal = remove_outliers(gal, cut_idxs)
+
     circ = gchop.preproc.jcirc(gal)
     df = pd.DataFrame(
         {
@@ -217,9 +223,46 @@ def dump_results(X, labels, path):
     #eps_r = [item for sublist in X[:, (1,)] for item in sublist]
     #normalized_star_energy = [item for sublist in X[:, (2,)] for item in sublist]
     #data_to_graph = pd.DataFrame({'eps': eps, 'eps_r': eps_r, 'normalized_star_energy': normalized_star_energy, 'label': labels})
-    data_to_graph = pd.DataFrame({'label': labels})
+    data_to_graph = pd.DataFrame({'labels': labels})
     
     joblib.dump(data_to_graph, path+'.data', compress=3)
+
+def read_cut_idxs(gal_name, results_path):
+    path = f'{results_path}/{gal_name}/cut_idxs.data'
+    if os.path.exists(path):
+        cut_idxs = joblib.load(path)
+        return cut_idxs
+    return None
+
+def remove_outliers(gal, cut_idxs):
+    # convertimos las estrellas en un dataframe
+    sdf = gal.stars.to_dataframe()
+    
+    # nos fijamos que filas hay que borrar
+    cut_sdf = sdf.drop(cut_idxs, axis="rows")
+    del sdf
+    
+    # creamos un nuevo particle set con las nuevas estrellas
+    stars = gchop.ParticleSet(
+        ptype=gchop.ParticleSetType.STARS, 
+        m=cut_sdf['m'].values,
+        x=cut_sdf['x'].values,
+        y=cut_sdf['y'].values,
+        z=cut_sdf['z'].values,
+        vx=cut_sdf['vx'].values,
+        vy=cut_sdf['vy'].values,
+        vz=cut_sdf['vz'].values,
+        potential=cut_sdf['potential'].values,
+        softening=gal.stars.softening)
+    
+    del cut_sdf
+    
+    dm = gal.dark_matter.copy()
+    gas = gal.gas.copy()
+    
+    cut_gal = gchop.Galaxy(stars=stars, dark_matter=dm, gas=gas)
+    
+    return cut_gal
 
 
 def my_silhouette_score(model, X, y=None):
@@ -234,7 +277,7 @@ def analyze_galaxy_2_clusters_linkages(
     file_name, dataset_directory, arg_linkage, results_path="results"
 ):
     print("Getting galaxy data")
-    gal, X = get_galaxy_data(dataset_directory + "/" + file_name)
+    gal, X = get_galaxy_data(dataset_directory + "/" + file_name, results_path, file_name)
     # Memory optimization
     X = X.astype(np.float32)
     
@@ -260,7 +303,8 @@ def analyze_galaxy_2_clusters_linkages(
         labels = np.array(clustering_model.labels_)
 
         #volvemos a obtener el gal por que lo eliminamos para hacer memoria para el fit
-        gal, _ = get_galaxy_data(dataset_directory + "/" + file_name)
+        gal, _ = get_galaxy_data(dataset_directory + "/" + file_name, results_path, file_name)
+
 
         comp = build_comp(gal, labels)
         internal_evaluation = Internal(comp)
@@ -292,7 +336,7 @@ def analyze_galaxy_2_clusters_linkages(
 if __name__ == "__main__":
     script_path = os.path.dirname( __file__ )
     print(script_path)
-    directory_name = "tests/datasets/"
+    directory_name = "tests/datasets"
     print(directory_name)
 
     import argparse
