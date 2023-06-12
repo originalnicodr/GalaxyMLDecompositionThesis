@@ -500,9 +500,44 @@ def get_galaxy_data(path):  # tests/datasets/gal394242.h5
 def read_labels_from_file(gal_name, linkage, results_path):
     path = f'{results_path}/{gal_name}/{linkage}'
     data = joblib.load(path+".data")
-    
-    return data["label"].to_numpy()
 
+    return data["labels"].to_numpy()
+
+def read_cut_idxs(gal_name, results_path):
+    path = f'{results_path}/{gal_name}/cut_idxs.data'
+    cut_idxs = joblib.load(path)
+    return cut_idxs
+
+def remove_outliers(gal, cut_idxs):
+    # convertimos las estrellas en un dataframe
+    sdf = gal.stars.to_dataframe()
+    
+    # nos fijamos que filas hay que borrar
+    cut_idxs
+    cut_sdf = sdf.drop(cut_idxs, axis="rows")
+    del sdf
+    
+    # creamos un nuevo particle set con las nuevas estrellas
+    stars = gchop.ParticleSet(
+        ptype=gchop.ParticleSetType.STARS, 
+        m=cut_sdf['m'].values,
+        x=cut_sdf['x'].values,
+        y=cut_sdf['y'].values,
+        z=cut_sdf['z'].values,
+        vx=cut_sdf['vx'].values,
+        vy=cut_sdf['vy'].values,
+        vz=cut_sdf['vz'].values,
+        potential=cut_sdf['potential'].values,
+        softening=gal.stars.softening)
+    
+    del cut_sdf
+    
+    dm = gal.dark_matter.copy()
+    gas = gal.gas.copy()
+    
+    cut_gal = gchop.Galaxy(stars=stars, dark_matter=dm, gas=gas)
+    
+    return cut_gal
 
 
 def plot_gal(gal_name, dataset_directory, labels_map, real_space_only, results_path="results"):
@@ -510,18 +545,21 @@ def plot_gal(gal_name, dataset_directory, labels_map, real_space_only, results_p
     gal, circ_df = get_galaxy_data(dataset_directory + "/" + gal_name)
 
     average_labels = read_labels_from_file(gal_name, "average", results_path)
-    average_comp = build_comp(gal, average_labels)
-
     complete_labels = read_labels_from_file(gal_name, "complete", results_path)
-    complete_comp = build_comp(gal, complete_labels)
-
     single_labels = read_labels_from_file(gal_name, "single", results_path)
-    single_comp = build_comp(gal, single_labels)
-
     ward_labels = read_labels_from_file(gal_name, "ward", results_path)
-    ward_comp = build_comp(gal, ward_labels)
-
     abadi_labels = read_labels_from_file(gal_name, "Abadi", results_path)
+
+    print(f'{results_path}/{gal_name}/cut_idxs.data')
+
+    if os.path.exists(f'{results_path}/{gal_name}/cut_idxs.data'):
+        cut_idxs = read_cut_idxs(gal_name, results_path)
+        gal = remove_outliers(gal, cut_idxs)
+
+    average_comp = build_comp(gal, average_labels)
+    complete_comp = build_comp(gal, complete_labels)
+    single_comp = build_comp(gal, single_labels)
+    ward_comp = build_comp(gal, ward_labels)
     abadi_comp = build_comp(gal, abadi_labels)
 
     draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, abadi_comp, labels_map, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
