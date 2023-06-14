@@ -274,7 +274,7 @@ def my_davies_bouldin_score(model, X):
     return davies_bouldin_score(X, preds)
 
 def analyze_galaxy_2_clusters_linkages(
-    file_name, dataset_directory, arg_linkage, results_path="results"
+    file_name, dataset_directory, linkages, results_path="results"
 ):
     print("Getting galaxy data")
     gal, X = get_galaxy_data(dataset_directory + "/" + file_name, results_path, file_name)
@@ -290,7 +290,7 @@ def analyze_galaxy_2_clusters_linkages(
 
     #comp = gchop.models.AutoGaussianMixture(n_jobs=-1).decompose(gal)
 
-    linkages = [arg_linkage] if arg_linkage is not None else ["ward", "single", "complete", "average"]
+    #linkages = [arg_linkage] if arg_linkage is not None else ["ward", "single", "complete", "average"]
 
     for linkage in linkages:
         clustering_model = AgglomerativeClustering(n_clusters=2, linkage=linkage)
@@ -312,15 +312,17 @@ def analyze_galaxy_2_clusters_linkages(
         if not os.path.exists(results_path + "/" + file_name + "/"):
             os.makedirs(results_path + "/" + file_name + "/")
 
-        with open(results_path+'/'+file_name+'/' + file_name + ' - Internal evaluation results.txt', 'a') as f:
-            print(f"# Linkage {linkage}:")
-            f.write(f"# Linkage {linkage}:\n")
-
+        with open(results_path+'/'+file_name+'/' + 'internal_evaluation.csv', 'a') as f:
             # Esta bien usar todas las columnas para calcular el score, no?
-            print("Silhouette: ", internal_evaluation.silhouette(labels))
-            f.write(f"Silhouette: {internal_evaluation.silhouette(labels)}\n")
-            print("Davies Bouldin: ", internal_evaluation.davies_bouldin(labels), "\n")
-            f.write(f"Davies Bouldin: {internal_evaluation.davies_bouldin(labels)}\n\n")
+            s_score = internal_evaluation.silhouette(labels)
+            db_score = internal_evaluation.davies_bouldin(labels)
+
+            print(f"# {linkage}:")
+            print("Silhouette: ", s_score)
+            print("Davies Bouldin: ", db_score, "\n")
+
+            f.write(f"{linkage},Silhouette,{s_score}\n")
+            f.write(f"{linkage},Davies Bouldin,{db_score}\n")
 
             dump_results(X, labels, f'{results_path}/{file_name}/{linkage}')
             #draw_3d_graph(X, labels, f'{file_name} - 2 clusters - {linkage}', f'{results_path}/{file_name}/{linkage} - 2 clusters')
@@ -344,19 +346,25 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
-    ap.add_argument("-l", "--linkage", required=False, help="Linkage that we will be analyzing")
+    ap.add_argument("-c", "--complete", required=False, action='store_true', help="Use all available linkages instead of just ward")
+
     args = vars(ap.parse_args())
 
     galaxy_name = args.get("galaxyname")
-    linkage = args.get("linkage")
+    complete_linkage = args.get("complete")
+
+    if complete_linkage:
+        linkages = ["ward", "single", "complete", "average"]
+    else:
+        linkages = ["ward"]
 
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_2_clusters_linkages(galaxy_name, directory_name, linkage)
+        analyze_galaxy_2_clusters_linkages(galaxy_name, directory_name, linkages)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
             for file_name in filenames:
                 print(f"analizing galaxy: {file_name}")
-                analyze_galaxy_2_clusters_linkages(file_name, directory_name, linkage)
+                analyze_galaxy_2_clusters_linkages(file_name, directory_name, linkages)

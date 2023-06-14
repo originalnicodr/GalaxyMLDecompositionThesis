@@ -175,15 +175,17 @@ def analyze_galaxy_2_clusters_linkages(
     if not os.path.exists(results_path + "/" + file_name + "/"):
         os.makedirs(results_path + "/" + file_name + "/")
 
-    with open(results_path+'/'+file_name+'/' + file_name + ' - Internal evaluation results.txt', 'a') as f:
-        print(f"# Abadi:")
-        f.write(f"# Abadi:\n")
-
+    with open(results_path+'/'+file_name+'/' + 'internal_evaluation.csv', 'a') as f:
         # Esta bien usar todas las columnas para calcular el score, no?
-        print("Silhouette: ", internal_evaluation.silhouette(labels))
-        f.write(f"Silhouette: {internal_evaluation.silhouette(labels)}\n")
-        print("Davies Bouldin: ", internal_evaluation.davies_bouldin(labels), "\n")
-        f.write(f"Davies Bouldin: {internal_evaluation.davies_bouldin(labels)}\n\n")
+        s_score = internal_evaluation.silhouette(labels)
+        db_score = internal_evaluation.davies_bouldin(labels)
+
+        print(f"# Abadi:")
+        print("Silhouette: ", s_score)
+        print("Davies Bouldin: ", db_score, "\n")
+
+        f.write(f"Abadi,Silhouette,{s_score}\n")
+        f.write(f"Abadi,Davies Bouldin,{db_score}\n")
 
         dump_results(labels, f'{results_path}/{file_name}/Abadi')
         dump_cut_idxs(cut_idxs, f'{results_path}/{file_name}/cut_idxs')
