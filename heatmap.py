@@ -77,13 +77,28 @@ def silhouette_heatmap(folders_list, main_folder):
         dfs.append(silhouette)
 
     df_new = pd.concat(dfs, axis=1)
+
+    df_new.columns = ["Base", "Base", "Rcut", "Rcut", "Isolation Forest", "Isolation Forest"]
+    df_new = df_new.iloc[:, [0, 2, 4, 1, 3, 5]]
+
+    print("Silhouette")
+
+    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
+    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
+    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
+    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
+
+    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
+    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
+    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
+    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
+
     heatmap = sns.heatmap(df_new, vmin=silhouette_vmin, vmax=silhouette_vmax, annot=True, fmt='.3f')
 
     heatmap.set(ylabel='Galaxia')
 
-    plt.text(0.20, 0.9, "Base", fontsize=14, transform=plt.gcf().transFigure)
-    plt.text(0.4, 0.9, "Rcut", fontsize=14, transform=plt.gcf().transFigure)
-    plt.text(0.53, 0.9, "Isolation Forest", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.24, 0.9, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.53, 0.9, "CJ Ward", fontsize=14, transform=plt.gcf().transFigure)
     
     fig = heatmap.get_figure()
     fig.suptitle("Comparacion Silhouette 2 clusters")
@@ -103,6 +118,21 @@ def davis_bouldin_heatmap(folders_list, main_folder):
 
     df_new = pd.concat(dfs, axis=1)
 
+    df_new.columns = ["Base", "Base", "Rcut", "Rcut", "Isolation Forest", "Isolation Forest"]
+    df_new = df_new.iloc[:, [0, 2, 4, 1, 3, 5]]
+
+    print("Davis Bouldin")
+
+    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
+    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
+    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
+    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
+
+    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
+    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
+    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
+    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
+
     davies_bouldin_vmin = df_new.to_numpy().min()
     davies_bouldin_median = np.median(df_new.to_numpy())
     davies_bouldin_vmax = df_new.to_numpy().max()
@@ -111,9 +141,8 @@ def davis_bouldin_heatmap(folders_list, main_folder):
 
     heatmap.set(ylabel='Galaxia')
 
-    plt.text(0.20, 0.9, "Base", fontsize=14, transform=plt.gcf().transFigure)
-    plt.text(0.4, 0.9, "Rcut", fontsize=14, transform=plt.gcf().transFigure)
-    plt.text(0.53, 0.9, "Isolation Forest", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.24, 0.9, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.53, 0.9, "CJ Ward", fontsize=14, transform=plt.gcf().transFigure)
     
     fig = heatmap.get_figure()
     fig.suptitle("Comparacion Davis Bouldin 2 clusters")

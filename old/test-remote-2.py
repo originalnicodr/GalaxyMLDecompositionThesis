@@ -213,7 +213,8 @@ def analyze_galaxy_agglomerative_clustering(
 ):
     tuned_parameters = [
         {
-            "linkage": ["ward", "complete", "average", "single"],
+            #"linkage": ["ward", "complete", "average", "single"],
+            "linkage": ["ward"],
             "columns": combinations_up_to([0, 1, 2], 3),
         },
     ]
