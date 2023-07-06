@@ -393,7 +393,7 @@ def plot_gal(gal_name, dataset_directory, labels_map, real_space_only, results_p
     gal, circ_df = get_galaxy_data(dataset_directory + "/" + gal_name)
 
     ward_labels = read_labels_from_file(gal_name, "ward", results_path)
-    abadi_labels = read_labels_from_file(gal_name, "Abadi", results_path)
+    abadi_labels = read_labels_from_file(gal_name, "abadi", results_path)
 
     print(f'{results_path}/{gal_name}/cut_idxs.data')
 

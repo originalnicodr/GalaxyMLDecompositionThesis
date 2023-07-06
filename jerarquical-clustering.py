@@ -273,8 +273,8 @@ def my_davies_bouldin_score(model, X):
     preds = model.fit_predict(X)
     return davies_bouldin_score(X, preds)
 
-def analyze_galaxy_2_clusters_linkages(
-    file_name, dataset_directory, linkages, results_path="results"
+def analyze_galaxy_n_clusters_linkages(
+    file_name, dataset_directory, linkages, n, results_path="results"
 ):
     print("Getting galaxy data")
     gal, X = get_galaxy_data(dataset_directory + "/" + file_name, results_path, file_name)
@@ -293,7 +293,7 @@ def analyze_galaxy_2_clusters_linkages(
     #linkages = [arg_linkage] if arg_linkage is not None else ["ward", "single", "complete", "average"]
 
     for linkage in linkages:
-        clustering_model = AgglomerativeClustering(n_clusters=2, linkage=linkage)
+        clustering_model = AgglomerativeClustering(n_clusters=n, linkage=linkage)
         print("Fitting the model on the galaxy")
         # del
         # gc.colect
@@ -346,25 +346,29 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
+    ap.add_argument("-n", "--nclusters", required=False, default=2, help="Number of clusters we are looking for.")
     ap.add_argument("-c", "--complete", required=False, action='store_true', help="Use all available linkages instead of just ward")
 
     args = vars(ap.parse_args())
 
     galaxy_name = args.get("galaxyname")
     complete_linkage = args.get("complete")
+    n_clusters = int(args.get("nclusters"))
 
     if complete_linkage:
         linkages = ["ward", "single", "complete", "average"]
     else:
         linkages = ["ward"]
 
+    print(n_clusters)
+
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_2_clusters_linkages(galaxy_name, directory_name, linkages)
+        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, linkages, n_clusters)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
             for file_name in filenames:
                 print(f"analizing galaxy: {file_name}")
-                analyze_galaxy_2_clusters_linkages(file_name, directory_name, linkages)
+                analyze_galaxy_n_clusters_linkages(file_name, directory_name, linkages, n_clusters)

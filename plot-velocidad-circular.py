@@ -73,7 +73,7 @@ def plot_circ_velocity(df, full_curve_df, title, save_path):
     fig.suptitle(title)
 
     for ax in axs:
-        ax.set_ylim([0,200])
+        ax.set_ylim([0,220])
         ax.set_xlim([0,20])
         
     del df
