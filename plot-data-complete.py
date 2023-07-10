@@ -21,7 +21,7 @@ def update_comp_labels(comp, labels):
     labels_with_nans = create_labels_for_comp(comp, labels)
     return gchop.models.Components(labels_with_nans, comp.ptypes, comp.m, comp.lmap, comp.probabilities, comp.attributes, comp.x_clean, comp.rows_mask)
 
-def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, title, save_path):
+def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path):
     import seaborn as sns
     import matplotlib.pyplot as plt
     
@@ -47,7 +47,7 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Ward---------------
     plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
     sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
     sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
@@ -56,7 +56,7 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Complete---------------
     plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
     sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
     sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
@@ -65,7 +65,7 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Average---------------
     plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
     sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
     sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
@@ -74,7 +74,7 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Single---------------
     plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
     sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
     plot_with_legend = sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order)
@@ -99,15 +99,15 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     plt.subplots_adjust(wspace=0.5, hspace=0.1)
     ##plt.subplots_adjust(wspace=0.3, hspace=0.3)
 
-    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9), ncol=2)
 
-    fig.suptitle(title)
+    fig.suptitle(f'{gal_name} - {ground_truth_method}')
     fig.subplots_adjust(top=0.95)
     fig.set_figwidth(7)
 
-    fig.savefig(save_path+' - scatterplot.png', bbox_inches='tight', dpi=300)
+    fig.savefig(f'{results_path}/{gal_name}/{gal_name} - scatterplot.png', bbox_inches='tight', dpi=300)
 
-def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, title, save_path):
+def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path):
     import seaborn as sns
     import matplotlib.pyplot as plt
     
@@ -135,7 +135,7 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Ward---------------
     plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="y", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -147,7 +147,7 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Complete---------------
     plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="y", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -159,7 +159,7 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Average---------------
     plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="y", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -171,7 +171,7 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Single---------------
     plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     plot_with_legend = sns.histplot(x="y", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -202,16 +202,16 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
 
     sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
 
-    fig.suptitle(title)
+    fig.suptitle(f'{gal_name} - {ground_truth_method}')
     fig.subplots_adjust(top=0.95)
     fig.set_figwidth(7)
 
-    fig.savefig(save_path+' - histogram.png', bbox_inches='tight', dpi=300)
+    fig.savefig(f'{results_path}/{gal_name}/{gal_name} - histogram.png', bbox_inches='tight', dpi=300)
 
 
 
 
-def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, title, save_path):
+def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path):
     import seaborn as sns
     import matplotlib.pyplot as plt
     
@@ -240,7 +240,7 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Ward---------------
     plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
     unique_labels = df[hue].unique()
     hue_order = [c for c in hue_order if c in unique_labels ]
@@ -259,7 +259,7 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Complete---------------
     plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
     sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
     sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
@@ -275,7 +275,7 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Average---------------
     plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
     sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
     sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
@@ -291,7 +291,7 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     #-------------Single---------------
     plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
     sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
     plot_with_legend = sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order)
@@ -316,14 +316,14 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
 
     sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
 
-    fig.suptitle(title)
+    fig.suptitle(f'{gal_name} - {ground_truth_method}')
     fig.subplots_adjust(top=0.95)
     #fig.set_figheight(15)
     fig.set_figwidth(7)
 
-    fig.savefig(save_path+' - circ scatterplot.png', bbox_inches='tight', dpi=300)
+    fig.savefig(f'{results_path}/{gal_name}/{gal_name} - circ scatterplot.png', bbox_inches='tight', dpi=300)
 
-def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, title, save_path):
+def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path):
     import seaborn as sns
     import matplotlib.pyplot as plt
     
@@ -354,7 +354,7 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Ward---------------
     plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -369,7 +369,7 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Complete---------------
     plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -384,7 +384,7 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Average---------------
     plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -399,7 +399,7 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     #-------------Single---------------
     plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
     
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"])
+    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     plot_with_legend = sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -429,11 +429,11 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
 
     sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
 
-    fig.suptitle(title)
+    fig.suptitle(f'{gal_name} - {ground_truth_method}')
     fig.subplots_adjust(top=0.95)
     fig.set_figwidth(7)
 
-    fig.savefig(save_path+' - circ histogram.png', bbox_inches='tight', dpi=300)
+    fig.savefig(f'{results_path}/{gal_name}/{gal_name} - circ histogram.png', bbox_inches='tight', dpi=300)
 
 
 
@@ -556,7 +556,8 @@ def get_label_maps(path):
         lmaps = json.load(json_file)
     
     lmaps["gchop_lmap"] = {int(key) : val for key, val in lmaps["gchop_lmap"].items()}
-    lmaps["method_lmap"] = {int(key) : val for key, val in lmaps["method_lmap"].items()}
+    for linkage, lmap in lmaps["method_lmap"].items():
+        lmaps["method_lmap"][linkage] = {int(key) : val for key, val in lmap.items()}
 
     return lmaps
 
@@ -590,11 +591,11 @@ def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results
 
     label_maps = get_label_maps(f"{results_path}/{gal_name}")
 
-    draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
+    draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
     if not real_space_only:
-        draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
-        draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
-        draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, f'{gal_name} - 2 clusters', f'{results_path}/{gal_name}/{gal_name} - 2 clusters')
+        draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
+        draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
+        draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
 
 
 

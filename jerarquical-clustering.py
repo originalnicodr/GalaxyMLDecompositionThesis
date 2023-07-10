@@ -273,6 +273,24 @@ def my_davies_bouldin_score(model, X):
     preds = model.fit_predict(X)
     return davies_bouldin_score(X, preds)
 
+def get_label_maps(lmaps_path):
+    import json
+    
+    lmaps = {}
+    with open(lmaps_path) as json_file:
+        lmaps = json.load(json_file)
+    
+    return lmaps
+
+def expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path):
+    lmaps["method_lmap"]["complete"] = lmaps["method_lmap"]["ward"]
+    lmaps["method_lmap"]["average"] = lmaps["method_lmap"]["ward"]
+    lmaps["method_lmap"]["single"] = lmaps["method_lmap"]["ward"]
+
+    import json
+    with open(lmaps_path, "w") as lmapsfile:
+        json.dump(lmaps, lmapsfile, indent = 4) 
+
 def analyze_galaxy_n_clusters_linkages(
     file_name, dataset_directory, linkages, n, results_path="results"
 ):
@@ -291,6 +309,11 @@ def analyze_galaxy_n_clusters_linkages(
     #comp = gchop.models.AutoGaussianMixture(n_jobs=-1).decompose(gal)
 
     #linkages = [arg_linkage] if arg_linkage is not None else ["ward", "single", "complete", "average"]
+
+    if linkages != ["ward"]:
+        lmaps_path = f'{results_path}/{file_name}/lmaps.json'
+        lmaps = get_label_maps(lmaps_path)
+        expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path)
 
     for linkage in linkages:
         clustering_model = AgglomerativeClustering(n_clusters=n, linkage=linkage)
