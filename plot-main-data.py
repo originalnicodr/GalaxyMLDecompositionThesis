@@ -29,11 +29,20 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     hue_order = ["Disk", "Cold disk", "Warm disk", "Spheroid", "Halo", "Bulge"]
 
     print("graficando real scatterplot")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+
+    graph_all_linkes = average_comp is not None and complete_comp is not None and single_comp is not None
+
+    if graph_all_linkes:
+        fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+    else:
+        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey=False)
 
     #-------------Ground Truth---------------
     #Intervalo labels linkage: 0.170
-    plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.7, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ground_truth_comp, lmap=label_maps["gchop_lmap"])
 
@@ -45,40 +54,44 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[0,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
 
     #-------------Ward---------------
-    plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.3, "Ward", fontsize=14, transform=plt.gcf().transFigure)
     
     df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
     sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
+    plot_with_legend = sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[1,1], legend=not graph_all_linkes, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
     sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
 
-    #-------------Complete---------------
-    plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        #-------------Complete---------------
+        plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
 
-    #-------------Average---------------
-    plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
+        #-------------Average---------------
+        plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"]["average"])
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
 
-    #-------------Single---------------
-    plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
-    
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"]["single"])
+        #-------------Single---------------
+        plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
+        
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
-    sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    plot_with_legend = sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        plot_with_legend = sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
 
     for ax in fig.axes:
         ax.set_xlim([-20,20])
@@ -92,9 +105,9 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
         ax.tick_params(axis='both', labelleft=True, labelbottom=False)
         ax.set_aspect(1.)
     
-    fig.axes[12].tick_params(axis='x', labelbottom=True)
-    fig.axes[13].tick_params(axis='x', labelbottom=True)
-    fig.axes[14].tick_params(axis='x', labelbottom=True)
+    fig.axes[-3].tick_params(axis='x', labelbottom=True)
+    fig.axes[-2].tick_params(axis='x', labelbottom=True)
+    fig.axes[-1].tick_params(axis='x', labelbottom=True)
     
     plt.subplots_adjust(wspace=0.5, hspace=0.1)
     ##plt.subplots_adjust(wspace=0.3, hspace=0.3)
@@ -102,7 +115,7 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9), ncol=2)
 
     fig.suptitle(f'{gal_name} - {ground_truth_method}')
-    fig.subplots_adjust(top=0.95)
+    fig.subplots_adjust(top=0.95 if graph_all_linkes else 0.9)
     fig.set_figwidth(7)
 
     fig.savefig(f'{results_path}/{gal_name}/{gal_name} - scatterplot.png', bbox_inches='tight', dpi=300)
@@ -115,10 +128,19 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     hue_order = ["Spheroid", "Halo", "Bulge", "Disk", "Cold disk", "Warm disk"]
 
     print("graficando real hist")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+
+    graph_all_linkes = average_comp is not None and complete_comp is not None and single_comp is not None
+
+    if graph_all_linkes:
+        fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+    else:
+        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey=False)
 
     #-------------Ground Truth---------------
-    plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.7, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ground_truth_comp, lmap=label_maps["gchop_lmap"])
 
@@ -133,56 +155,61 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     axs[0,2].set_ylabel("")
 
     #-------------Ward---------------
-    plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.3, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    
     
     df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
     sns.histplot(x="x", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="y", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+    plot_with_legend = sns.histplot(x="y", hue=hue, data=df, ax=axs[1,1], legend=not graph_all_linkes, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
     axs[1,1].set_ylabel("")
     axs[1,2].set_ylabel("")
 
-    #-------------Complete---------------
-    plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        #-------------Complete---------------
+        plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
-    sns.histplot(x="x", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="y", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="z", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="x", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="y", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="z", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
-    axs[2,1].set_ylabel("")
-    axs[2,2].set_ylabel("")
+        axs[2,1].set_ylabel("")
+        axs[2,2].set_ylabel("")
 
-    #-------------Average---------------
-    plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
+        #-------------Average---------------
+        plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"]["average"])
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
-    sns.histplot(x="x", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="y", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="z", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="x", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="y", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="z", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
-    axs[3,1].set_ylabel("")
-    axs[3,2].set_ylabel("")
+        axs[3,1].set_ylabel("")
+        axs[3,2].set_ylabel("")
 
-    #-------------Single---------------
-    plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
-    
-    df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"]["single"])
+        #-------------Single---------------
+        plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
+        
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
-    sns.histplot(x="x", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    plot_with_legend = sns.histplot(x="y", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="z", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="x", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        plot_with_legend = sns.histplot(x="y", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="z", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
-    axs[4,1].set_ylabel("")
-    axs[4,2].set_ylabel("")
+        axs[4,1].set_ylabel("")
+        axs[4,2].set_ylabel("")
 
-    axs[4,0].set_xlabel("x")
-    axs[4,1].set_xlabel("y")
-    axs[4,2].set_xlabel("z")
+    axs[-1,0].set_xlabel("x")
+    axs[-1,1].set_xlabel("y")
+    axs[-1,2].set_xlabel("z")
 
     for ax in fig.axes:
         #ax.set_xticklabels([])
@@ -194,16 +221,16 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     
         ax.tick_params(axis='both', labelleft=True, labelbottom=False)
     
-    fig.axes[12].tick_params(axis='x', labelbottom=True)
-    fig.axes[13].tick_params(axis='x', labelbottom=True)
-    fig.axes[14].tick_params(axis='x', labelbottom=True)
+    fig.axes[-3].tick_params(axis='x', labelbottom=True)
+    fig.axes[-2].tick_params(axis='x', labelbottom=True)
+    fig.axes[-1].tick_params(axis='x', labelbottom=True)
 
     plt.subplots_adjust(wspace=0.4, hspace=0.1)
 
     sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
 
     fig.suptitle(f'{gal_name} - {ground_truth_method}')
-    fig.subplots_adjust(top=0.95)
+    fig.subplots_adjust(top=0.95 if graph_all_linkes else 0.9)
     fig.set_figwidth(7)
 
     fig.savefig(f'{results_path}/{gal_name}/{gal_name} - histogram.png', bbox_inches='tight', dpi=300)
@@ -219,10 +246,19 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     hue_order = ["Disk", "Cold disk", "Warm disk", "Spheroid", "Halo", "Bulge"]
 
     print("graficando circ scatterplot")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+
+    graph_all_linkes = average_comp is not None and complete_comp is not None and single_comp is not None
+
+    if graph_all_linkes:
+        fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+    else:
+        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey=False)
 
     #-------------Ground Truth---------------
-    plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.7, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ground_truth_comp, lmap=label_maps["gchop_lmap"])
 
@@ -238,7 +274,11 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     axs[0,1].set_ylim([0, 1.5])
 
     #-------------Ward---------------
-    plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.3, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    
     
     df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
@@ -246,59 +286,60 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     hue_order = [c for c in hue_order if c in unique_labels ]
 
     sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+    plot_with_legend = sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[1,1], legend=not graph_all_linkes, palette=palette, alpha=0.7, hue_order=hue_order)
     sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-
-    axs[1,0].set_xlabel("", fontsize=10)
-    axs[1,1].set_xlabel("", fontsize=10)
-    axs[1,2].set_xlabel("", fontsize=10)
 
     axs[1,0].set_xlim([0, 1.5])
     axs[1,1].set_ylim([0, 1.5])
 
-    #-------------Complete---------------
-    plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        axs[1,0].set_xlabel("", fontsize=10)
+        axs[1,1].set_xlabel("", fontsize=10)
+        axs[1,2].set_xlabel("", fontsize=10)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
+        #-------------Complete---------------
+        plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
-    axs[2,0].set_xlabel("", fontsize=10)
-    axs[2,1].set_xlabel("", fontsize=10)
-    axs[2,2].set_xlabel("", fontsize=10)
+        sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
 
-    axs[2,0].set_xlim([0, 1.5])
-    axs[2,1].set_ylim([0, 1.5])
+        axs[2,0].set_xlabel("", fontsize=10)
+        axs[2,1].set_xlabel("", fontsize=10)
+        axs[2,2].set_xlabel("", fontsize=10)
 
-    #-------------Average---------------
-    plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
+        axs[2,0].set_xlim([0, 1.5])
+        axs[2,1].set_ylim([0, 1.5])
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"]["average"])
+        #-------------Average---------------
+        plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
-    axs[3,0].set_xlabel("", fontsize=10)
-    axs[3,1].set_xlabel("", fontsize=10)
-    axs[3,2].set_xlabel("", fontsize=10)
+        sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
 
-    axs[3,0].set_xlim([0, 1.5])
-    axs[3,1].set_ylim([0, 1.5])
+        axs[3,0].set_xlabel("", fontsize=10)
+        axs[3,1].set_xlabel("", fontsize=10)
+        axs[3,2].set_xlabel("", fontsize=10)
 
-    #-------------Single---------------
-    plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
-    
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"]["single"])
+        axs[3,0].set_xlim([0, 1.5])
+        axs[3,1].set_ylim([0, 1.5])
 
-    sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
-    plot_with_legend = sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order)
-    sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        #-------------Single---------------
+        plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
+        
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
-    axs[4,0].set_xlim([0, 1.5])
-    axs[4,1].set_ylim([0, 1.5])
+        sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        plot_with_legend = sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+
+        axs[4,0].set_xlim([0, 1.5])
+        axs[4,1].set_ylim([0, 1.5])
 
     for ax in fig.axes:
         #ax.set_xticklabels([])
@@ -308,16 +349,16 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
         ax.yaxis.set_minor_locator(MultipleLocator(0.25))
         ax.tick_params(axis='both', labelleft=True, labelbottom=False)
     
-    fig.axes[12].tick_params(axis='x', labelbottom=True)
-    fig.axes[13].tick_params(axis='x', labelbottom=True)
-    fig.axes[14].tick_params(axis='x', labelbottom=True)
+    fig.axes[-3].tick_params(axis='x', labelbottom=True)
+    fig.axes[-2].tick_params(axis='x', labelbottom=True)
+    fig.axes[-1].tick_params(axis='x', labelbottom=True)
 
     plt.subplots_adjust(wspace=0.5, hspace=0.1)
 
     sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
 
     fig.suptitle(f'{gal_name} - {ground_truth_method}')
-    fig.subplots_adjust(top=0.95)
+    fig.subplots_adjust(top=0.95 if graph_all_linkes else 0.9)
     #fig.set_figheight(15)
     fig.set_figwidth(7)
 
@@ -331,10 +372,19 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     hue_order = ["Spheroid", "Halo", "Bulge", "Disk", "Cold disk", "Warm disk"]
 
     print("graficando circ hist")
-    fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+
+    graph_all_linkes = average_comp is not None and complete_comp is not None and single_comp is not None
+
+    if graph_all_linkes:
+        fig, axs = plt.subplots(5, 3, figsize=(6, 2*5), sharex=False, sharey=False)
+    else:
+        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey=False)
 
     #-------------Ground Truth---------------
-    plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.865, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.7, ground_truth_method, fontsize=14, transform=plt.gcf().transFigure)
 
     df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ground_truth_comp, lmap=label_maps["gchop_lmap"])
 
@@ -352,12 +402,16 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     axs[0,1].set_xlim([0, 1.5])
 
     #-------------Ward---------------
-    plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        plt.text(-0.15, 0.695, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    else:
+        plt.text(-0.15, 0.3, "Ward", fontsize=14, transform=plt.gcf().transFigure)
+    
     
     df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], ward_comp, lmap=label_maps["method_lmap"]["ward"])
 
     sns.histplot(x="eps", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[1,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+    plot_with_legend = sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[1,1], legend=not graph_all_linkes, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
     sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
     axs[1,1].set_ylabel("", fontsize=10)
@@ -366,54 +420,55 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
 
     axs[1,1].set_xlim([0, 1.5])
 
-    #-------------Complete---------------
-    plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
+    if graph_all_linkes:
+        #-------------Complete---------------
+        plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], complete_comp, lmap=label_maps["method_lmap"]["complete"])
 
-    sns.histplot(x="eps", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="eps", hue=hue, data=df, ax=axs[2,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[2,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[2,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
-    axs[2,1].set_ylabel("", fontsize=10)
-    axs[2,2].set_ylabel("", fontsize=10)
-    axs[2,2].set_xlabel("", fontsize=10)
+        axs[2,1].set_ylabel("", fontsize=10)
+        axs[2,2].set_ylabel("", fontsize=10)
+        axs[2,2].set_xlabel("", fontsize=10)
 
-    axs[2,1].set_xlim([0, 1.5])
+        axs[2,1].set_xlim([0, 1.5])
 
-    #-------------Average---------------
-    plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
+        #-------------Average---------------
+        plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
 
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"]["average"])
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], average_comp, lmap=label_maps["method_lmap"]["average"])
 
-    sns.histplot(x="eps", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="eps", hue=hue, data=df, ax=axs[3,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[3,1], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[3,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
-    axs[3,1].set_ylabel("", fontsize=10)
-    axs[3,2].set_ylabel("", fontsize=10)
-    axs[3,2].set_xlabel("", fontsize=10)
+        axs[3,1].set_ylabel("", fontsize=10)
+        axs[3,2].set_ylabel("", fontsize=10)
+        axs[3,2].set_xlabel("", fontsize=10)
 
-    axs[3,1].set_xlim([0, 1.5])
+        axs[3,1].set_xlim([0, 1.5])
 
-    #-------------Single---------------
-    plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
-    
-    df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"]["single"])
+        #-------------Single---------------
+        plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
+        
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], single_comp, lmap=label_maps["method_lmap"]["single"])
 
-    sns.histplot(x="eps", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    plot_with_legend = sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
-    sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="eps", hue=hue, data=df, ax=axs[4,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        plot_with_legend = sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[4,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[4,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
 
 
-    axs[4,1].set_ylabel("", fontsize=10)
-    axs[4,2].set_ylabel("", fontsize=10)
+        axs[4,1].set_ylabel("", fontsize=10)
+        axs[4,2].set_ylabel("", fontsize=10)
 
-    axs[4,0].set_xlabel("eps")
-    axs[4,1].set_xlabel("eps_r")
-    axs[4,2].set_xlabel("normalized_star_energy")
+        axs[4,1].set_xlim([0, 1.5])
 
-    axs[4,1].set_xlim([0, 1.5])
+    axs[-1,0].set_xlabel("eps")
+    axs[-1,1].set_xlabel("eps_r")
+    axs[-1,2].set_xlabel("normalized_star_energy")
 
     for ax in fig.axes:
         from matplotlib.ticker import MultipleLocator
@@ -421,16 +476,16 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
         ax.yaxis.set_minor_locator(MultipleLocator(0.1))
         ax.tick_params(axis='both', labelleft=True, labelbottom=False)
     
-    fig.axes[12].tick_params(axis='x', labelbottom=True)
-    fig.axes[13].tick_params(axis='x', labelbottom=True)
-    fig.axes[14].tick_params(axis='x', labelbottom=True)
+    fig.axes[-3].tick_params(axis='x', labelbottom=True)
+    fig.axes[-2].tick_params(axis='x', labelbottom=True)
+    fig.axes[-1].tick_params(axis='x', labelbottom=True)
 
     plt.subplots_adjust(wspace=0.3, hspace=0.1)
 
     sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
 
     fig.suptitle(f'{gal_name} - {ground_truth_method}')
-    fig.subplots_adjust(top=0.95)
+    fig.subplots_adjust(top=0.95 if graph_all_linkes else 0.9)
     fig.set_figwidth(7)
 
     fig.savefig(f'{results_path}/{gal_name}/{gal_name} - circ histogram.png', bbox_inches='tight', dpi=300)
@@ -565,10 +620,12 @@ def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results
     print("Getting galaxy data")
     gal, circ_df = get_galaxy_data(dataset_directory + "/" + gal_name)
 
-    average_labels = read_labels_from_file(gal_name, "average", results_path)
-    complete_labels = read_labels_from_file(gal_name, "complete", results_path)
-    single_labels = read_labels_from_file(gal_name, "single", results_path)
+    if os.path.exists(f'{results_path}/{gal_name}/cut_idxs.data'):
+        cut_idxs = read_cut_idxs(gal_name, results_path)
+        gal = remove_outliers(gal, cut_idxs)
+
     ward_labels = read_labels_from_file(gal_name, "ward", results_path)
+    ward_comp = build_comp(gal, ward_labels)
 
     if os.path.exists(f'{results_path}/{gal_name}/abadi.data'):
         ground_truth_labels = read_labels_from_file(gal_name, "abadi", results_path)
@@ -579,14 +636,23 @@ def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results
     else:
         raise ValueError("No ground truth labels found")
 
-    if os.path.exists(f'{results_path}/{gal_name}/cut_idxs.data'):
-        cut_idxs = read_cut_idxs(gal_name, results_path)
-        gal = remove_outliers(gal, cut_idxs)
+    if (
+        os.path.exists(f'{results_path}/{gal_name}/complete.data') and
+        os.path.exists(f'{results_path}/{gal_name}/average.data') and
+        os.path.exists(f'{results_path}/{gal_name}/single.data')
+    ):
+        average_labels = read_labels_from_file(gal_name, "average", results_path)
+        complete_labels = read_labels_from_file(gal_name, "complete", results_path)
+        single_labels = read_labels_from_file(gal_name, "single", results_path)
 
-    average_comp = build_comp(gal, average_labels)
-    complete_comp = build_comp(gal, complete_labels)
-    single_comp = build_comp(gal, single_labels)
-    ward_comp = build_comp(gal, ward_labels)
+        average_comp = build_comp(gal, average_labels)
+        complete_comp = build_comp(gal, complete_labels)
+        single_comp = build_comp(gal, single_labels)
+    else:
+        average_comp = None
+        complete_comp = None
+        single_comp = None
+    
     ground_truth_comp = build_comp(gal, ground_truth_labels)
 
     label_maps = get_label_maps(f"{results_path}/{gal_name}")
