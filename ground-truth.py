@@ -242,7 +242,10 @@ def analyze_galaxy_clusters_linkages(
     file_name, dataset_directory, clustering_method, outliers_removal_method, results_path="results"
 ):
     print("Getting galaxy data")
-    gal, X = get_galaxy_data(dataset_directory + "/" + file_name)
+    gal, X = get_galaxy_data(f"{dataset_directory}/{file_name}.h5")
+
+    if not os.path.exists(f"{results_path}/{file_name}/"):
+        os.makedirs(f"{results_path}/{file_name}/")
 
     if outliers_removal_method is not None:
         gal, cut_idxs = remove_outliers(gal, outliers_removal_method)
@@ -266,9 +269,6 @@ def analyze_galaxy_clusters_linkages(
         save_lmap(comp.lmap, np.unique(labels), f"{results_path}/{file_name}")
 
     internal_evaluation = Internal(comp)
-
-    if not os.path.exists(results_path + "/" + file_name + "/"):
-        os.makedirs(results_path + "/" + file_name + "/")
 
     with open(results_path+'/'+file_name+'/' + 'internal_evaluation.csv', 'a') as f:
         # Esta bien usar todas las columnas para calcular el score, no?
@@ -313,7 +313,7 @@ if __name__ == "__main__":
     outliers_removal_method = args.get("outliersremovalmethod")
 
     print(f"analizing galaxy: {galaxy_name}")
-    analyze_galaxy_clusters_linkages(galaxy_name, directory_name, clustering_method, outliers_removal_method)
+    #analyze_galaxy_clusters_linkages(galaxy_name, directory_name, clustering_method, outliers_removal_method)
 
 
     """

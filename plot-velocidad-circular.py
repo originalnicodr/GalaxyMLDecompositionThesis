@@ -64,7 +64,7 @@ def plot_circ_velocity(df, full_curve_df, title, save_path):
     disk_plot = sns.lineplot(x="radius", y="vcir", hue="method", data=df[df["labels"] == "Disk"], ax=axs[1], legend=True, style="method")
     
     axs[1].set_ylabel("Disco\n$V_{circ}$")
-    axs[1].set_xlabel("r")
+    axs[1].set_xlabel("r [kpc]")
        
     sns.move_legend(disk_plot, "lower center", bbox_to_anchor=(1.125, .95), ncol=1, title="Metodos")
 

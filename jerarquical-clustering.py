@@ -197,10 +197,11 @@ def draw_2d_graph(gal, labels, comp, title, save_path):
 
 
 
-def get_galaxy_data(path, results_path, file_name):  # tests/datasets/gal394242.h5
-    gal = gchop.preproc.center_and_align(gchop.io.read_hdf5(path), r_cut=30)
+def get_galaxy_data(dataset_directory, results_path, gal_name):  # tests/datasets/gal394242.h5
+    gal_path = f"{dataset_directory}/{gal_name}.h5"
+    gal = gchop.preproc.center_and_align(gchop.io.read_hdf5(gal_path), r_cut=30)
 
-    cut_idxs = read_cut_idxs(file_name, results_path)
+    cut_idxs = read_cut_idxs(gal_name, results_path)
     if not cut_idxs is None:
         print("Removing outliers")
         gal = remove_outliers(gal, cut_idxs)
@@ -213,7 +214,8 @@ def get_galaxy_data(path, results_path, file_name):  # tests/datasets/gal394242.
             "normalized_star_energy": circ.normalized_star_energy,
         }
     ).dropna()
-    return gal, df.to_numpy()
+    #return gal, df.to_numpy()
+    return gal, df
 
 
 def dump_results(X, labels, path):
@@ -291,51 +293,73 @@ def expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path):
     with open(lmaps_path, "w") as lmapsfile:
         json.dump(lmaps, lmapsfile, indent = 4) 
 
+def get_ground_truth_method(results_path, gal_name):
+    if os.path.exists(f'{results_path}/{gal_name}/abadi.data'):
+        return "Abadi"
+    if os.path.exists(f'{results_path}/{gal_name}/autogmm.data'):
+        return "AutoGMM"
+    raise ValueError("No ground truth labels found")
+
+
 def analyze_galaxy_n_clusters_linkages(
-    file_name, dataset_directory, linkages, n, results_path="results"
+    gal_name, dataset_directory, linkages, parameters, results_path="results"
 ):
     print("Getting galaxy data")
-    gal, X = get_galaxy_data(dataset_directory + "/" + file_name, results_path, file_name)
+    gal, X = get_galaxy_data(dataset_directory, results_path, gal_name)
     # Memory optimization
-    X = X.astype(np.float32)
-    
+    #X = X.astype(np.float32)
+
     del gal
+
+    ground_truth_method = get_ground_truth_method(results_path, gal_name)
+
+    if parameters == "minimum" or parameters == "m":
+        if ground_truth_method == "Abadi":
+            X = X[['eps']]
+        if ground_truth_method == "AutoGMM":
+            # All possible parameters
+            X = X
+    elif parameters == "all" or parameters == "a":
+        X = X
+    else:
+        raise ValueError("Wrong parameters option passed.")
+
+    print(f"Usando las columnas {X.columns}")
     
-    # Seleccionamos las columnas que contienen la informacion utilizada por Abadi
-    X_with_selected_columns = X[:, (0, 1)]
-    #del X
     gc.collect()
 
     #comp = gchop.models.AutoGaussianMixture(n_jobs=-1).decompose(gal)
 
     #linkages = [arg_linkage] if arg_linkage is not None else ["ward", "single", "complete", "average"]
 
+    lmaps_path = f'{results_path}/{gal_name}/lmaps.json'
+    lmaps = get_label_maps(lmaps_path)
     if linkages != ["ward"]:
-        lmaps_path = f'{results_path}/{file_name}/lmaps.json'
-        lmaps = get_label_maps(lmaps_path)
         expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path)
 
+    n_clusters = len(lmaps["method_lmap"]["ward"])
+
     for linkage in linkages:
-        clustering_model = AgglomerativeClustering(n_clusters=n, linkage=linkage)
+        clustering_model = AgglomerativeClustering(n_clusters=n_clusters, linkage=linkage)
         print("Fitting the model on the galaxy")
         # del
         # gc.colect
 
-        clustering_model.fit(X_with_selected_columns)
+        clustering_model.fit(X)
         
         labels = np.array(clustering_model.labels_)
 
         #volvemos a obtener el gal por que lo eliminamos para hacer memoria para el fit
-        gal, _ = get_galaxy_data(dataset_directory + "/" + file_name, results_path, file_name)
+        gal, _ = get_galaxy_data(dataset_directory, results_path, gal_name)
 
 
         comp = build_comp(gal, labels)
         internal_evaluation = Internal(comp)
 
-        if not os.path.exists(results_path + "/" + file_name + "/"):
-            os.makedirs(results_path + "/" + file_name + "/")
+        if not os.path.exists(results_path + "/" + gal_name + "/"):
+            os.makedirs(results_path + "/" + gal_name + "/")
 
-        with open(results_path+'/'+file_name+'/' + 'internal_evaluation.csv', 'a') as f:
+        with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
             # Esta bien usar todas las columnas para calcular el score, no?
             s_score = internal_evaluation.silhouette(labels)
             db_score = internal_evaluation.davies_bouldin(labels)
@@ -347,9 +371,9 @@ def analyze_galaxy_n_clusters_linkages(
             f.write(f"{linkage},Silhouette,{s_score}\n")
             f.write(f"{linkage},Davies Bouldin,{db_score}\n")
 
-            dump_results(X, labels, f'{results_path}/{file_name}/{linkage}')
-            #draw_3d_graph(X, labels, f'{file_name} - 2 clusters - {linkage}', f'{results_path}/{file_name}/{linkage} - 2 clusters')
-            #draw_2d_graph(gal, labels, comp, f'{file_name} - 2 clusters - {linkage}', f'{results_path}/{file_name}/{linkage} - 2 clusters')  
+            dump_results(X, labels, f'{results_path}/{gal_name}/{linkage}')
+            #draw_3d_graph(X, labels, f'{gal_name} - 2 clusters - {linkage}', f'{results_path}/{gal_name}/{linkage} - 2 clusters')
+            #draw_2d_graph(gal, labels, comp, f'{gal_name} - 2 clusters - {linkage}', f'{results_path}/{gal_name}/{linkage} - 2 clusters')  
 
         del clustering_model
         del labels
@@ -369,29 +393,28 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
-    ap.add_argument("-n", "--nclusters", required=False, default=2, help="Number of clusters we are looking for.")
+    # Minimum parameters is refered to the sames used in the ground truth method we will be comparing with
+    ap.add_argument("-p", "--parameters", required=False, default="all", help="all or minimum")
     ap.add_argument("-c", "--complete", required=False, action='store_true', help="Use all available linkages instead of just ward")
 
     args = vars(ap.parse_args())
 
     galaxy_name = args.get("galaxyname")
     complete_linkage = args.get("complete")
-    n_clusters = int(args.get("nclusters"))
+    parameters = args.get("parameters")
 
     if complete_linkage:
         linkages = ["ward", "single", "complete", "average"]
     else:
         linkages = ["ward"]
 
-    print(n_clusters)
-
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, linkages, n_clusters)
+        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, linkages, parameters)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
-            for file_name in filenames:
-                print(f"analizing galaxy: {file_name}")
-                analyze_galaxy_n_clusters_linkages(file_name, directory_name, linkages, n_clusters)
+            for gal_name in filenames:
+                print(f"analizing galaxy: {gal_name}")
+                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, linkages, parameters)

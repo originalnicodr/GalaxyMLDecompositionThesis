@@ -25,7 +25,7 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     import seaborn as sns
     import matplotlib.pyplot as plt
     
-    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'orange', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
+    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'magenta', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
     hue_order = ["Disk", "Cold disk", "Warm disk", "Spheroid", "Halo", "Bulge"]
 
     print("graficando real scatterplot")
@@ -96,6 +96,8 @@ def draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp
     for ax in fig.axes:
         ax.set_xlim([-20,20])
         ax.set_ylim([-20,20])
+        ax.set_xlabel(f"{ax.get_xlabel()} [kpc]")
+        ax.set_ylabel(f"{ax.get_ylabel()} [kpc]")
         #ax.set_xticklabels([])
         #ax.set_yticklabels([])
         #ax.tick_params(axis='both', labelleft=True, labelbottom=True)
@@ -124,7 +126,7 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     import seaborn as sns
     import matplotlib.pyplot as plt
     
-    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'orange', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
+    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'magenta', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
     hue_order = ["Spheroid", "Halo", "Bulge", "Disk", "Cold disk", "Warm disk"]
 
     print("graficando real hist")
@@ -214,6 +216,7 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     for ax in fig.axes:
         #ax.set_xticklabels([])
         #ax.set_yticklabels([])
+        ax.set_xlabel(f"{ax.get_xlabel()} [kpc]")
         ax.set_xlim([-20,20])
         from matplotlib.ticker import MultipleLocator
         ax.xaxis.set_minor_locator(MultipleLocator(2))
@@ -242,7 +245,7 @@ def draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp
     import seaborn as sns
     import matplotlib.pyplot as plt
     
-    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'orange', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
+    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'magenta', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
     hue_order = ["Disk", "Cold disk", "Warm disk", "Spheroid", "Halo", "Bulge"]
 
     print("graficando circ scatterplot")
@@ -368,7 +371,7 @@ def draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, 
     import seaborn as sns
     import matplotlib.pyplot as plt
     
-    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'orange', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
+    palette = {"Spheroid": 'red', "Bulge": 'red', "Halo": 'magenta', "Disk": 'blue', "Cold disk": 'blue', "Warm disk": 'green'}
     hue_order = ["Spheroid", "Halo", "Bulge", "Disk", "Cold disk", "Warm disk"]
 
     print("graficando circ hist")
@@ -549,8 +552,10 @@ ax.set_title(title)
 fig.savefig(title+'.png')
 """
 
-def get_galaxy_data(path):  # tests/datasets/gal394242.h5
-    gal = gchop.preproc.center_and_align(gchop.io.read_hdf5(path), r_cut=30)
+def get_galaxy_data(dataset_directory, gal_name):  # tests/datasets/gal394242.h5
+    gal_path = f"{dataset_directory}/{gal_name}.h5"
+    gal = gchop.preproc.center_and_align(gchop.io.read_hdf5(gal_path), r_cut=30)
+
     circ = gchop.preproc.jcirc(gal)
     df = pd.DataFrame(
         {
@@ -618,7 +623,7 @@ def get_label_maps(path):
 
 def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results"):
     print("Getting galaxy data")
-    gal, circ_df = get_galaxy_data(dataset_directory + "/" + gal_name)
+    gal, _ = get_galaxy_data(dataset_directory, gal_name)
 
     if os.path.exists(f'{results_path}/{gal_name}/cut_idxs.data'):
         cut_idxs = read_cut_idxs(gal_name, results_path)

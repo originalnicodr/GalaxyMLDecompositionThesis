@@ -24,57 +24,85 @@ def internal_metrics_df(directory_name):
             df = pd.concat([df, g_df], axis=0)
 
     #we remove the "galaxy" part of their names
-    df.galaxy = df.galaxy.map(lambda gname: gname[7:-3])
+    df.galaxy = df.galaxy.map(lambda gname: gname[7:])
 
     return df
 
-def get_silhouette_results(df):
+def get_ground_truth_method(results_path, gal_name):
+    if os.path.exists(f'{results_path}/{gal_name}/abadi.data'):
+        return "abadi", "Abadi"
+    if os.path.exists(f'{results_path}/{gal_name}/autogmm.data'):
+        return "autogmm", "AutoGMM"
+    raise ValueError("No ground truth labels found")
+
+def get_ground_truth_method_in_main_dir(main_directory):
+    method_id = None
+    method_name = None
+    for method_dir in os.listdir(main_directory):
+
+        if os.path.isdir(f"{main_directory}/{method_dir}"):
+            for gal_dir in os.listdir(f"{main_directory}/{method_dir}"):
+                gal_method_id, gal_method_name = get_ground_truth_method(f"{main_directory}/{method_dir}", gal_dir)
+                
+                if (not method_id is None) and  (not method_name is None) and method_id != gal_method_id and gal_method_name != method_name:
+                    raise ValueError("There were multiple methods used!")
+
+                method_id = gal_method_id
+                method_name = gal_method_name
+
+    return method_id, method_name 
+
+def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name):
     silhouette = df[df.metric == "Silhouette"]
 
-    abadi = silhouette[silhouette.method == "Abadi"]
-    abadi.index = abadi.galaxy
-    abadi = abadi.drop(["metric", "method", "galaxy"], axis=1)
-    abadi.set_axis(["Abadi"], axis='columns', inplace=True)
+    ground_truth = silhouette[silhouette.method == ground_truth_method_id]
+    ground_truth.index = ground_truth.galaxy
+    ground_truth = ground_truth.drop(["metric", "method", "galaxy"], axis=1)
+    ground_truth.set_axis([ground_truth_method_name], axis='columns', inplace=True)
 
     ward = silhouette[silhouette.method == "ward"]
     ward.index = ward.galaxy
     ward = ward.drop(["metric", "method", "galaxy"], axis=1)
     ward.set_axis(["Clustering Jerarquico"], axis='columns', inplace=True)
 
-    silhouette = pd.concat([abadi, ward], axis=1)
+    silhouette = pd.concat([ground_truth, ward], axis=1)
 
     return silhouette
 
-def get_davis_bouldin_results(df):
+def get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name):
     davies_bouldin = df[df.metric == "Davies Bouldin"]
 
-    abadi = davies_bouldin[davies_bouldin.method == "Abadi"]
-    abadi.index = abadi.galaxy
-    abadi = abadi.drop(["metric", "method", "galaxy"], axis=1)
-    abadi.set_axis(["Abadi"], axis='columns', inplace=True)
+    ground_truth = davies_bouldin[davies_bouldin.method == ground_truth_method_id]
+    ground_truth.index = ground_truth.galaxy
+    ground_truth = ground_truth.drop(["metric", "method", "galaxy"], axis=1)
+    ground_truth.set_axis([ground_truth_method_name], axis='columns', inplace=True)
 
     ward = davies_bouldin[davies_bouldin.method == "ward"]
     ward.index = ward.galaxy
     ward = ward.drop(["metric", "method", "galaxy"], axis=1)
     ward.set_axis(["Clustering Jerarquico"], axis='columns', inplace=True)
 
-    davies_bouldin = pd.concat([abadi, ward], axis=1)
+    davies_bouldin = pd.concat([ground_truth, ward], axis=1)
 
     return davies_bouldin
 
-def silhouette_heatmap(folders_list, main_folder):
+def silhouette_heatmap(main_directory):
     import seaborn as sns
     import matplotlib.pyplot as plt
     
     silhouette_vmin = -1
     silhouette_vmax = 1
 
-    dfs = []
-    for folder in folders_list:
-        df = internal_metrics_df(folder)
-        silhouette = get_silhouette_results(df)
+    ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(main_directory)
 
-        dfs.append(silhouette)
+    dfs = []
+    for folder in os.listdir(main_directory):
+        print(folder)
+        if os.path.isdir(f"{main_directory}/{folder}"):
+            df = internal_metrics_df(f"{main_directory}/{folder}")
+            silhouette = get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name)
+
+            dfs.append(silhouette)
 
     df_new = pd.concat(dfs, axis=1)
 
@@ -83,13 +111,13 @@ def silhouette_heatmap(folders_list, main_folder):
 
     print("Silhouette")
 
-    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
-    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
+    print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
+    print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
     print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
     print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
 
-    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
-    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
+    print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
+    print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
     print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
     print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
 
@@ -97,24 +125,28 @@ def silhouette_heatmap(folders_list, main_folder):
 
     heatmap.set(ylabel='Galaxia')
 
-    plt.text(0.24, 0.9, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.24, 0.9, ground_truth_method_name, fontsize=14, transform=plt.gcf().transFigure)
     plt.text(0.53, 0.9, "CJ Ward", fontsize=14, transform=plt.gcf().transFigure)
     
     fig = heatmap.get_figure()
-    fig.suptitle("Comparacion Silhouette 2 clusters")
+    fig.suptitle(f"Comparacion Silhouette - {ground_truth_method_name}")
 
-    fig.savefig(f"{main_folder}/silhouette.pdf", bbox_inches='tight', dpi=300)
+    fig.savefig(f"{main_directory}/silhouette.pdf", bbox_inches='tight', dpi=300)
     plt.clf()
 
-def davis_bouldin_heatmap(folders_list, main_folder):
+def davis_bouldin_heatmap(main_directory):
     import seaborn as sns
     import matplotlib.pyplot as plt
-    dfs = []
-    for folder in folders_list:
-        df = internal_metrics_df(folder)
-        davis_bouldin = get_davis_bouldin_results(df)
 
-        dfs.append(davis_bouldin)
+    ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(main_directory)
+
+    dfs = []
+    for folder in os.listdir(main_directory):
+        if os.path.isdir(f"{main_directory}/{folder}"):
+            df = internal_metrics_df(f"{main_directory}/{folder}")
+            davis_bouldin = get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name)
+
+            dfs.append(davis_bouldin)
 
     df_new = pd.concat(dfs, axis=1)
 
@@ -123,13 +155,13 @@ def davis_bouldin_heatmap(folders_list, main_folder):
 
     print("Davis Bouldin")
 
-    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
-    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
+    print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
+    print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
     print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
     print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
 
-    print("Abadi rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
-    print("Abadi Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
+    print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
+    print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
     print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
     print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
 
@@ -141,13 +173,13 @@ def davis_bouldin_heatmap(folders_list, main_folder):
 
     heatmap.set(ylabel='Galaxia')
 
-    plt.text(0.24, 0.9, "Abadi", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.24, 0.9, ground_truth_method_name, fontsize=14, transform=plt.gcf().transFigure)
     plt.text(0.53, 0.9, "CJ Ward", fontsize=14, transform=plt.gcf().transFigure)
     
     fig = heatmap.get_figure()
-    fig.suptitle("Comparacion Davis Bouldin 2 clusters")
+    fig.suptitle(f"Comparacion Davis Bouldin - {ground_truth_method_name}")
 
-    fig.savefig(f"{main_folder}/davis bouldin.pdf", bbox_inches='tight', dpi=300)
+    fig.savefig(f"{main_directory}/davis bouldin.pdf", bbox_inches='tight', dpi=300)
     plt.clf()
 
 
@@ -160,19 +192,22 @@ def read_labels_from_file(gal_name, linkage, results_path):
     
     return data["labels"].to_numpy()
 
-def get_presicion_recall_df(galaxias, should_invert_label_map, results_path):
+def get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, results_path, average_method):
+    galaxies = get_galaxies(results_path)
     rows = []
-    for gal in galaxias:
-        abadi = read_labels_from_file(gal+".h5", "Abadi", results_path)
-        ward = read_labels_from_file(gal+".h5", "ward", results_path)
+    for gal in galaxies:
+        ground_truth = read_labels_from_file(gal, ground_truth_method_id, f"{results_path}/{method_folder}")
+        ground_truth = [lmaps[method_folder][gal]["gchop_lmap"][l] for l in ground_truth]
 
-        if should_invert_label_map[gal]:
-            ward = 1 - ward
+        ward = read_labels_from_file(gal, "ward", f"{results_path}/{method_folder}")
+        ward = [lmaps[method_folder][gal]["method_lmap"]["ward"][l] for l in ward]
         
+        # We are using micro as average, which calculate metrics globally by counting the total true positives, false negatives and false positives.
+        # Instead of using macro, which calculate metrics for each label, and find their unweighted mean. This does not take label imbalance into account.
         row = {
             "Galaxy": gal.split("_", 1)[-1].rsplit(".", 1)[0].replace("_", "-"),
-            "Precision": metrics.precision_score(abadi, ward),
-            "Recall": metrics.recall_score(abadi, ward),
+            "Precision": metrics.precision_score(ground_truth, ward, average=average_method),
+            "Recall": metrics.recall_score(ground_truth, ward, average=average_method),
         }
         rows.append(row)
 
@@ -184,11 +219,14 @@ def get_presicion_recall_df(galaxias, should_invert_label_map, results_path):
         
     return df
 
-def presicion_heatmap(galaxias, should_invert_label_maps, folders_list, main_folder):
+def presicion_heatmap(lmaps, main_directory, average_method):
+    ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(main_directory)
+
     dfs = []
-    for idx, folder in enumerate(folders_list):
-        df = get_presicion_recall_df(galaxias, should_invert_label_maps[idx], folder)
-        dfs.append(df.loc[:, df.columns == 'Precision'])
+    for method_folder in os.listdir(main_directory):
+        if os.path.isdir(f"{main_directory}/{method_folder}"):
+            df = get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, main_directory, average_method)
+            dfs.append(df.loc[:, df.columns == 'Precision'])
 
     df_precision = pd.concat(dfs, axis=1)
     df_precision.columns = ["Base", "Rcut", "Isolation Forest"]
@@ -197,15 +235,18 @@ def presicion_heatmap(galaxias, should_invert_label_maps, folders_list, main_fol
     gal_presicion_heatmap = sns.heatmap(df_precision, vmin=0, vmax=1, annot=True, fmt='.3f')
     gal_presicion_heatmap.set(ylabel='Galaxia')
 
-    gal_presicion_heatmap.set_title('Comparación de resultados presición')
-    plt.savefig(f"{main_folder}/presicion.pdf", bbox_inches='tight')
+    gal_presicion_heatmap.set_title(f'Comparación de resultados presición - {ground_truth_method_name}')
+    plt.savefig(f"{main_directory}/presicion - {average_method}.pdf", bbox_inches='tight')
     plt.clf()
 
-def recall_heatmap(galaxias, should_invert_label_maps, folders_list, main_folder):
+def recall_heatmap(lmaps, main_directory, average_method):
+    ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(main_directory)
+
     dfs = []
-    for idx, folder in enumerate(folders_list):
-        df = get_presicion_recall_df(galaxias, should_invert_label_maps[idx], folder)
-        dfs.append(df.loc[:, df.columns == 'Recall'])
+    for method_folder in os.listdir(main_directory):
+        if os.path.isdir(f"{main_directory}/{method_folder}"):
+            df = get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, main_directory, average_method)
+            dfs.append(df.loc[:, df.columns == 'Recall'])
 
     df_precision = pd.concat(dfs, axis=1)
     df_precision.columns = ["Base", "Rcut", "Isolation Forest"]
@@ -214,18 +255,57 @@ def recall_heatmap(galaxias, should_invert_label_maps, folders_list, main_folder
     gal_presicion_heatmap = sns.heatmap(df_precision, vmin=0, vmax=1, annot=True, fmt='.3f')
     gal_presicion_heatmap.set(ylabel='Galaxia')
 
-    gal_presicion_heatmap.set_title('Comparación de resultados recall')
-    plt.savefig(f"{main_folder}/recall.pdf", bbox_inches='tight')
+    gal_presicion_heatmap.set_title('Comparación de resultados recall - {ground_truth_method_name}')
+    plt.savefig(f"{main_directory}/recall - {average_method}.pdf", bbox_inches='tight')
     plt.clf()
+
+def get_label_maps(path):
+    import json
+    
+    lmaps = {}
+    with open(f'{path}/lmaps.json') as json_file:
+        lmaps = json.load(json_file)
+    
+    lmaps["gchop_lmap"] = {int(key) : val for key, val in lmaps["gchop_lmap"].items()}
+    for linkage, lmap in lmaps["method_lmap"].items():
+        lmaps["method_lmap"][linkage] = {int(key) : val for key, val in lmap.items()}
+
+    return lmaps
+
+
+def get_all_methods_label_maps(main_directory):
+    methods_lmaps = {}
+    for method_dir in os.listdir(main_directory):
+        methods_lmaps[method_dir] = {}
+        if os.path.isdir(f"{main_directory}/{method_dir}"):
+            for gal_dir in os.listdir(f"{main_directory}/{method_dir}"):
+                methods_lmaps[method_dir][gal_dir] = get_label_maps(f"{main_directory}/{method_dir}/{gal_dir}")
+
+    return methods_lmaps
+
+
+
+def get_galaxies(main_directory):
+    gal_list = []
+    for method_dir in os.listdir(main_directory):
+        method_dir_gal_list = []
+        if os.path.isdir(f"{main_directory}/{method_dir}"):
+            for gal_dir in os.listdir(f"{main_directory}/{method_dir}"):
+                method_dir_gal_list.append(gal_dir)
+
+            if gal_list != [] and gal_list != method_dir_gal_list:
+                raise ValueError("There is a missing galaxy in one of the method folders!")
+
+            gal_list = method_dir_gal_list
+
+    return gal_list
+
 
 if __name__ == "__main__":
     import argparse
-    galaxias = ["galaxy_TNG_490577", "galaxy_TNG_469438", "galaxy_TNG_468064", "galaxy_TNG_420815", "galaxy_TNG_386429", "galaxy_TNG_375401", "galaxy_TNG_389511", "galaxy_TNG_393336", "galaxy_TNG_405000"]
-
     # Construct the argument parser
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
-    ap.add_argument("-lmap", "--labelsmap", required=False, nargs='+', default=[0, 0, 0, 0, 0, 0, 0, 0, 0], help="List of lmaps being used (ex. -lmap 0 1 1 1 0 0 1 0 0)")
     ap.add_argument("-rd", "--results_directory", required=False, default="results_heatmap")
     # I should make this more reliable, sorry
     ap.add_argument("-d", "--debug", required=False, action='store_true')
@@ -235,55 +315,22 @@ if __name__ == "__main__":
     #for galaxy_folder in os.scandir(directory_name):
     #    if galaxy_folder.is_dir():
     #        print(galaxy_folder)
-    labels_map = [x == '1' for x in args.get("labelsmap")]
+    #labels_map = [x == '1' for x in args.get("labelsmap")]
     debug = args.get("debug")
     results_directory = args.get("results_directory")
+    gal_list = get_galaxies(results_directory)
 
     if debug:
-        galaxias = ["galaxy_TNG_611399"]
+        gal_list = ["galaxy_TNG_611399"]
         labels_map = [False]
 
-    should_invert_label_map = dict(zip(galaxias, labels_map))
+    lmaps = get_all_methods_label_maps(results_directory)
 
-    #hardcoding these until I get something more general when dealing with more clusters
-    base_label_map = {"galaxy_TNG_490577": False,
-            "galaxy_TNG_469438": False,
-            "galaxy_TNG_468064": True,
-            "galaxy_TNG_420815": True,
-            "galaxy_TNG_386429": False,
-            "galaxy_TNG_375401": False,
-            "galaxy_TNG_389511": False,
-            "galaxy_TNG_393336": True,
-            "galaxy_TNG_405000": True,
-            }
-
-    rcut_label_map = {"galaxy_TNG_490577": False,
-        "galaxy_TNG_469438": True,
-        "galaxy_TNG_468064": False,
-        "galaxy_TNG_420815": True,
-        "galaxy_TNG_386429": True,
-        "galaxy_TNG_375401": False,
-        "galaxy_TNG_389511": True,
-        "galaxy_TNG_393336": False,
-        "galaxy_TNG_405000": False,
-        }
-
-    isolation_forest_label_map = {"galaxy_TNG_490577": False,
-        "galaxy_TNG_469438": True,
-        "galaxy_TNG_468064": True,
-        "galaxy_TNG_420815": False,
-        "galaxy_TNG_386429": True,
-        "galaxy_TNG_375401": True,
-        "galaxy_TNG_389511": False,
-        "galaxy_TNG_393336": True,
-        "galaxy_TNG_405000": True,
-        }
-
-    should_invert_label_map = [base_label_map, rcut_label_map, isolation_forest_label_map]
-    results_paths = [f"{results_directory}/base", f"{results_directory}/rcut", f"{results_directory}/isolation_forest"]
-
-    silhouette_heatmap(results_paths, results_directory)
-    davis_bouldin_heatmap(results_paths, results_directory)
-    presicion_heatmap(galaxias, should_invert_label_map, results_paths, results_directory)
-    recall_heatmap(galaxias, should_invert_label_map, results_paths, results_directory)
+    #silhouette_heatmap(results_directory)
+    #davis_bouldin_heatmap(results_directory)
+    presicion_heatmap(lmaps, results_directory, 'micro')
+    presicion_heatmap(lmaps, results_directory, 'weighted')
+    recall_heatmap(lmaps, results_directory, 'micro')
+    recall_heatmap(lmaps, results_directory, 'weighted')
+    #recall_heatmap(galaxias, should_invert_label_map, results_paths, results_directory)
     
