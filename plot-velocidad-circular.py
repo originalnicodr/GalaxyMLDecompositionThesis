@@ -30,54 +30,67 @@ def update_comp_labels(comp, labels):
     labels_with_nans = create_labels_for_comp(comp, labels)
     return gchop.models.Components(labels_with_nans, comp.ptypes, comp.m, comp.lmap, comp.probabilities, comp.attributes, comp.x_clean, comp.rows_mask)
 
-def get_lmap(labels_map, n):
-    lmap1 = {0: "Spheroid", 1: "Disk"}
-    lmap2 = {1: "Spheroid", 0: "Disk"}
-    maps = [lmap1, lmap2]
 
-    return maps[int(labels_map[n])]
-
-def plot_circ_velocity(df, full_curve_df, title, save_path):
+def plot_circ_velocity(df, full_curve_df, gal_name, ground_truth_method_name, results_directory):
     import seaborn as sns
     import matplotlib.pyplot as plt
     
     df = df.copy()
-    methods = df.method.str.title()
-    methods = methods.str.replace("Isolation_Forest", "IF")
-    methods = methods.str.replace("Rcut", "RCut")
-    df.method = methods
+    #c_methods = df.clustering_method.str.title()
+    #c_methods = c_methods.str.replace("Isolation_Forest", "IF")
+    #c_methods = c_methods.str.replace("Rcut", "RCut")
+    #df.clustering_method = c_methods
+
+    components = df['labels'].unique()
+    outlier_removal_methods = df['outlier removal method'].unique()
+    print(outlier_removal_methods)
 
     print("Graficando")
-    fig, axs = plt.subplots(2, 1, figsize=(8, 4), sharex=True, sharey=False)
+    fig, axs = plt.subplots(len(components), len(outlier_removal_methods), figsize=(3 * len(outlier_removal_methods), 2 * len(components)), sharex=True, sharey=True)
 
-    #sns.lineplot(x="radius", y="vcir-all", hue="method", data=df, ax=axs[0], legend=False, style="method")
-    #axs[0].set_ylabel("All\n" + axs[0].get_ylabel())
-    #axs[0].set_xlabel("")
+    for axs_row in axs:
+        for ax in axs_row:
+            ax.set_ylim([0,220])
+            ax.set_xlim([0,20])
 
-    sns.lineplot(x="radius", y="vcir", hue="method", data=full_curve_df, ax=axs[0], legend=False, style="method", palette=['#000000'], alpha=1)
-    sns.lineplot(x="radius", y="vcir", hue="method", data=df[df["labels"] == "Spheroid"], ax=axs[0], legend=False, style="method")
-    
-    axs[0].set_ylabel("Esferoide\n$V_{circ}$")
-    axs[0].set_xlabel("")
+    plot_with_legend = None
+    added_legend = False
 
-    sns.lineplot(x="radius", y="vcir", hue="method", data=full_curve_df, ax=axs[1], legend=False, style="method", palette=['#000000'], alpha=1, label="Estrellas")
-    disk_plot = sns.lineplot(x="radius", y="vcir", hue="method", data=df[df["labels"] == "Disk"], ax=axs[1], legend=True, style="method")
-    
-    axs[1].set_ylabel("Disco\n$V_{circ}$")
-    axs[1].set_xlabel("r [kpc]")
-       
-    sns.move_legend(disk_plot, "lower center", bbox_to_anchor=(1.125, .95), ncol=1, title="Metodos")
+    plt.subplots_adjust(wspace=0.1, hspace=0.1)
 
-    #plt.setp(axs, xscale='symlog')
+    for idx, outlier_removal_method in enumerate(outlier_removal_methods):
+        axs[0, idx].title.set_text(outlier_removal_method)
 
-    fig.suptitle(title)
+        for idy, component in enumerate(components):
+            print(f"Graficando {component} con {outlier_removal_method}")
 
-    for ax in axs:
-        ax.set_ylim([0,220])
-        ax.set_xlim([0,20])
-        
+            graph_df = df[df["labels"] == component]
+            graph_df = graph_df[graph_df['outlier removal method'] == outlier_removal_method]
+
+            axs[idy, idx].set_ylabel(component + "\n$V_{circ}$" if idx==0 else " ")
+            axs[idy, idx].set_xlabel("r [kpc]" if component==components[-1] else " ")
+
+            if graph_df.empty:
+                # We dont delete the axes because we might need the labels
+                #fig.delaxes(axs[idy][idx])
+                continue
+
+            sns.lineplot(x="radius", y="vcir", hue="clustering method", data=full_curve_df, ax=axs[idy, idx], legend=False, style="clustering method", palette=['#000000'], alpha=1, label="Estrellas")
+            
+            if not added_legend and outlier_removal_method==outlier_removal_methods[-1]:
+                plot_with_legend = sns.lineplot(x="radius", y="vcir", hue="clustering method", data=graph_df , ax=axs[idy, idx], legend=True, style="clustering method")
+                sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(1.5, .5), ncol=1, title="Métodos de clustering")
+                added_legend = True
+            else:
+                sns.lineplot(x="radius", y="vcir", hue="clustering method", data=graph_df , ax=axs[idy, idx], legend=False, style="clustering method")
+            
+            
+
+
+    fig.suptitle(f"{gal_name}")
+
     del df
-    fig.savefig(save_path, bbox_inches='tight', dpi=300)
+    fig.savefig(f"{results_directory}/{gal_name} - {ground_truth_method_name} - circ_velocity.png", bbox_inches='tight', dpi=300)
 
 
 def build_comp(gal, labels):
@@ -171,151 +184,148 @@ def remove_outliers(gal, cut_idxs):
 
 def add_circ_velocity(df):
     df = df[["m", "radius", "labels"]].copy()
+    components = df['labels'].unique()
 
-    s_df = df[df["labels"] == "Spheroid"].copy()
-    s_df.sort_values("radius", inplace=True)
-    s_df["m_cumsum"] = s_df.m.cumsum()
-    s_df["vcir"] = np.sqrt(G * s_df["m_cumsum"] / s_df["radius"])
+    components_dfs = []
+    for component in components: 
+        c_df = df[df["labels"] == component].copy()
+        c_df.sort_values("radius", inplace=True)
+        c_df["m_cumsum"] = c_df.m.cumsum()
+        c_df["vcir"] = np.sqrt(G * c_df["m_cumsum"] / c_df["radius"])
 
-    #print(s_df)
+        components_dfs.append(c_df)
 
-    d_df = df[df["labels"] == "Disk"].copy()
-    d_df.sort_values("radius", inplace=True)
-    d_df["m_cumsum"] = d_df.m.cumsum()
-    d_df["vcir"] = np.sqrt(G * d_df["m_cumsum"] / d_df["radius"])
-
-    #print(d_df)
-
-    c_df = pd.concat([s_df, d_df], axis=0)
-
-    #print(c_df)
-
-    return c_df
+    return pd.concat(components_dfs, axis=0)
 
 
-def assign_labels(labels_array, should_invert_label):
-    if should_invert_label:
-        labels_array = 1 - labels_array
-
-    map = {0: "Spheroid", 1: "Disk"}
-
-    labels_array = np.vectorize(map.get)(labels_array)
+def assign_labels(labels_array, lmap):
+    labels_array = np.vectorize(lmap.get)(labels_array)
 
     return labels_array
 
+def get_ground_truth_method(results_path, gal_name):
+    if os.path.exists(f'{results_path}/{gal_name}/abadi.data'):
+        return "abadi", "Abadi"
+    if os.path.exists(f'{results_path}/{gal_name}/autogmm.data'):
+        return "autogmm", "AutoGMM"
+    raise ValueError("No ground truth labels found")
 
-def plot_gal(gal_name, dataset_directory, should_invert_label_maps, folders_list, results_directory):
+def get_ground_truth_method_in_main_dir(main_directory):
+    method_id = None
+    method_name = None
+    for method_dir in os.listdir(main_directory):
+
+        if os.path.isdir(f"{main_directory}/{method_dir}"):
+            for gal_dir in os.listdir(f"{main_directory}/{method_dir}"):
+                gal_method_id, gal_method_name = get_ground_truth_method(f"{main_directory}/{method_dir}", gal_dir)
+                
+                if (not method_id is None) and  (not method_name is None) and method_id != gal_method_id and gal_method_name != method_name:
+                    raise ValueError("There were multiple methods used!")
+
+                method_id = gal_method_id
+                method_name = gal_method_name
+
+    return method_id, method_name 
+
+def plot_gal(gal_name, dataset_dir, lmaps, results_directory):
     print("Getting galaxy data")
-    print(folders_list)
     print(results_directory)
 
-    import galaxychop as gc
-
+    ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(results_directory)
 
     dataframes = []
-    for idx, folder in enumerate(folders_list):
-        gal, circ_df = get_galaxy_data(dataset_directory + "/" + gal_name + ".h5")
+    for method_folder in sorted(os.listdir(results_directory)):
+        if os.path.isdir(f"{results_directory}/{method_folder}"):
+            gal, _ = get_galaxy_data(f"{dataset_dir}/{gal_name}.h5")
 
-        if os.path.exists(f'{results_directory}/{folder}/{gal_name}.h5/cut_idxs.data'):
-            cut_idxs = read_cut_idxs(gal_name+".h5", f"{results_directory}/{folder}")
-            gal = remove_outliers(gal, cut_idxs)
+            if os.path.exists(f'{results_directory}/{method_folder}/{gal_name}/cut_idxs.data'):
+                cut_idxs = read_cut_idxs(gal_name, f"{results_directory}/{method_folder}")
+                gal = remove_outliers(gal, cut_idxs)
 
-        abadi_labels = read_labels_from_file(gal_name+".h5", "Abadi", f"{results_directory}/{folder}")
-        abadi_comp = build_comp(gal, abadi_labels)
+            ground_truth_labels = read_labels_from_file(gal_name, ground_truth_method_id, f'{results_directory}/{method_folder}/')
+            ground_truth_comp = build_comp(gal, ground_truth_labels)
 
-        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z", "m"], abadi_comp, lmap=None)
-        df.rename(columns={'Labels':'labels'}, inplace=True)
-        df["method"] = f"abadi - {folder}"
-        
-        df["labels"] = assign_labels(df["labels"].to_numpy(), False)
-        df = df.replace(to_replace='None', value=np.nan).dropna()
-        df["radius"] = np.sqrt(df.x ** 2 + df.y ** 2 + df.z ** 2)
-        df["vcir"] = add_circ_velocity(df)["vcir"]
+            df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z", "m"], ground_truth_comp, lmap=None)
+            df.rename(columns={'Labels':'labels'}, inplace=True)
+            df["clustering method"] = ground_truth_method_name
+            df["outlier removal method"] = method_folder
+            
+            df["labels"] = assign_labels(df["labels"].to_numpy(), lmaps[method_folder]['gchop_lmap'])
+            df = df.replace(to_replace='None', value=np.nan).dropna()
+            df["radius"] = np.sqrt(df.x ** 2 + df.y ** 2 + df.z ** 2)
+            df["vcir"] = add_circ_velocity(df)["vcir"]
 
-        dataframes.append(df)
+            dataframes.append(df)
 
-        ward_labels = read_labels_from_file(gal_name+".h5", "ward", f"{results_directory}/{folder}")
-        ward_comp = build_comp(gal, ward_labels)
+            ward_labels = read_labels_from_file(gal_name, "ward", f"{results_directory}/{method_folder}")
+            ward_comp = build_comp(gal, ward_labels)
 
-        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z", "m"], ward_comp, lmap=None)
-        df.rename(columns={'Labels':'labels'}, inplace=True)
-        df["method"] = f"ward - {folder}"
-        df["labels"] = assign_labels(df["labels"].to_numpy(), should_invert_label_maps[idx][gal_name])
-        df = df.replace(to_replace='None', value=np.nan).dropna()
-        df["radius"] = np.sqrt(df.x ** 2 + df.y ** 2 + df.z ** 2)
-        df["vcir"] = add_circ_velocity(df)["vcir"]
+            df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z", "m"], ward_comp, lmap=None)
+            df.rename(columns={'Labels':'labels'}, inplace=True)
+            df["clustering method"] = 'Clustering Jerarquico'
+            df["outlier removal method"] = method_folder
+            df["labels"] = assign_labels(df["labels"].to_numpy(), lmaps[method_folder]["method_lmap"]['ward'])
+            df = df.replace(to_replace='None', value=np.nan).dropna()
+            df["radius"] = np.sqrt(df.x ** 2 + df.y ** 2 + df.z ** 2)
+            df["vcir"] = add_circ_velocity(df)["vcir"]
 
-        dataframes.append(df)
+            dataframes.append(df)
 
     full_curve_df = dataframes[0].copy()
     full_curve_df.sort_values("radius", inplace=True)
     full_curve_df["m_cumsum"] = full_curve_df.m.cumsum()
     full_curve_df["vcir"] = np.sqrt(G * full_curve_df["m_cumsum"] / full_curve_df["radius"])
-    full_curve_df["method"] = "complete galaxy"
+    full_curve_df["clustering method"] = "complete galaxy"
 
     df = pd.concat(dataframes, axis=0).reset_index()
 
-    plot_circ_velocity(df, full_curve_df, f'{gal_name} - 2 clusters', f'{results_directory}/{gal_name} - 2 clusters - circ_velocity.png')
+    plot_circ_velocity(df, full_curve_df, gal_name, ground_truth_method_name, results_directory)
+
+def get_label_maps(path):
+    import json
+    
+    lmaps = {}
+    with open(f'{path}/lmaps.json') as json_file:
+        lmaps = json.load(json_file)
+    
+    lmaps["gchop_lmap"] = {int(key) : val for key, val in lmaps["gchop_lmap"].items()}
+    for linkage, lmap in lmaps["method_lmap"].items():
+        lmaps["method_lmap"][linkage] = {int(key) : val for key, val in lmap.items()}
+
+    return lmaps
+
+def get_all_methods_for_gal_label_maps(main_directory, gal_name):
+    methods_lmaps = {}
+    for method_dir in os.listdir(main_directory):
+        if os.path.isdir(f"{results_directory}/{method_dir}"):
+            methods_lmaps[method_dir] = {}
+            if os.path.isdir(f"{main_directory}/{method_dir}"):
+                for gal_dir in os.listdir(f"{main_directory}/{method_dir}"):
+                    if gal_dir == gal_name:
+                        methods_lmaps[method_dir] = get_label_maps(f"{main_directory}/{method_dir}/{gal_dir}")
+                        break
+
+    return methods_lmaps
 
 
 if __name__ == "__main__":
     script_path = os.path.dirname( __file__ )
     print(script_path)
-    directory_name = "tests/datasets"
-    print(directory_name)
+    dataset_dir = "tests/datasets_prod"
+    print(dataset_dir)
 
     import argparse
     # Construct the argument parser
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=True, help="Dont include the extension!")
-    ap.add_argument("-rso", "--realspaceonly", required=False, action='store_true', help="Do only the graphs in real space.")
     ap.add_argument("-rd", "--results_directory", required=False, default="results_heatmap")
 
     args = vars(ap.parse_args())
 
-    galaxias = ["galaxy_TNG_490577", "galaxy_TNG_469438", "galaxy_TNG_468064", "galaxy_TNG_420815", "galaxy_TNG_386429", "galaxy_TNG_375401", "galaxy_TNG_389511", "galaxy_TNG_393336", "galaxy_TNG_405000"]
-    debug = args.get("debug")
     results_directory = args.get("results_directory")
-
-    #hardcoding these until I get something more general when dealing with more clusters
-    base_label_map = {"galaxy_TNG_490577": False,
-            "galaxy_TNG_469438": False,
-            "galaxy_TNG_468064": True,
-            "galaxy_TNG_420815": True,
-            "galaxy_TNG_386429": False,
-            "galaxy_TNG_375401": False,
-            "galaxy_TNG_389511": False,
-            "galaxy_TNG_393336": True,
-            "galaxy_TNG_405000": True,
-            }
-
-    rcut_label_map = {"galaxy_TNG_490577": False,
-        "galaxy_TNG_469438": True,
-        "galaxy_TNG_468064": False,
-        "galaxy_TNG_420815": True,
-        "galaxy_TNG_386429": True,
-        "galaxy_TNG_375401": False,
-        "galaxy_TNG_389511": True,
-        "galaxy_TNG_393336": False,
-        "galaxy_TNG_405000": False,
-        }
-
-    isolation_forest_label_map = {"galaxy_TNG_490577": False,
-        "galaxy_TNG_469438": True,
-        "galaxy_TNG_468064": True,
-        "galaxy_TNG_420815": False,
-        "galaxy_TNG_386429": True,
-        "galaxy_TNG_375401": True,
-        "galaxy_TNG_389511": False,
-        "galaxy_TNG_393336": True,
-        "galaxy_TNG_405000": True,
-        }
-
-    should_invert_label_map = [base_label_map, rcut_label_map, isolation_forest_label_map]
-    results_paths = ["base", "rcut", "isolation_forest"]
-
     gal_name = args.get("galaxyname")
-    real_space_only = args.get("realspaceonly")
 
-    plot_gal(gal_name, directory_name, should_invert_label_map, results_paths, results_directory)
+    lmaps = get_all_methods_for_gal_label_maps(results_directory, gal_name)
+
+    plot_gal(gal_name, dataset_dir, lmaps, results_directory)

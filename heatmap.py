@@ -65,7 +65,12 @@ def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name)
     ward = ward.drop(["metric", "method", "galaxy"], axis=1)
     ward.set_axis(["Clustering Jerarquico"], axis='columns', inplace=True)
 
+    print(ward)
+    print(ground_truth)
+
     silhouette = pd.concat([ground_truth, ward], axis=1)
+
+    print(silhouette)
 
     return silhouette
 
@@ -202,8 +207,6 @@ def get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, result
         ward = read_labels_from_file(gal, "ward", f"{results_path}/{method_folder}")
         ward = [lmaps[method_folder][gal]["method_lmap"]["ward"][l] for l in ward]
         
-        # We are using micro as average, which calculate metrics globally by counting the total true positives, false negatives and false positives.
-        # Instead of using macro, which calculate metrics for each label, and find their unweighted mean. This does not take label imbalance into account.
         row = {
             "Galaxy": gal.split("_", 1)[-1].rsplit(".", 1)[0].replace("_", "-"),
             "Precision": metrics.precision_score(ground_truth, ward, average=average_method),
@@ -236,7 +239,7 @@ def presicion_heatmap(lmaps, main_directory, average_method):
     gal_presicion_heatmap.set(ylabel='Galaxia')
 
     gal_presicion_heatmap.set_title(f'Comparación de resultados presición - {ground_truth_method_name}')
-    plt.savefig(f"{main_directory}/presicion - {average_method}.pdf", bbox_inches='tight')
+    plt.savefig(f"{main_directory}/presicion.pdf", bbox_inches='tight')
     plt.clf()
 
 def recall_heatmap(lmaps, main_directory, average_method):
@@ -255,8 +258,8 @@ def recall_heatmap(lmaps, main_directory, average_method):
     gal_presicion_heatmap = sns.heatmap(df_precision, vmin=0, vmax=1, annot=True, fmt='.3f')
     gal_presicion_heatmap.set(ylabel='Galaxia')
 
-    gal_presicion_heatmap.set_title('Comparación de resultados recall - {ground_truth_method_name}')
-    plt.savefig(f"{main_directory}/recall - {average_method}.pdf", bbox_inches='tight')
+    gal_presicion_heatmap.set_title(f'Comparación de resultados recall - {ground_truth_method_name}')
+    plt.savefig(f"{main_directory}/recall.pdf", bbox_inches='tight')
     plt.clf()
 
 def get_label_maps(path):
@@ -326,11 +329,13 @@ if __name__ == "__main__":
 
     lmaps = get_all_methods_label_maps(results_directory)
 
-    #silhouette_heatmap(results_directory)
-    #davis_bouldin_heatmap(results_directory)
-    presicion_heatmap(lmaps, results_directory, 'micro')
+    silhouette_heatmap(results_directory)
+    davis_bouldin_heatmap(results_directory)
+    #presicion_heatmap(lmaps, results_directory, 'micro')
     presicion_heatmap(lmaps, results_directory, 'weighted')
-    recall_heatmap(lmaps, results_directory, 'micro')
+    #recall_heatmap(lmaps, results_directory, 'micro')
     recall_heatmap(lmaps, results_directory, 'weighted')
-    #recall_heatmap(galaxias, should_invert_label_map, results_paths, results_directory)
-    
+
+    # 'weighted':  Calculate metrics for each label, and find their average weighted by support
+    # (the number of true instances for each label). This alters ‘macro’ to account for label imbalance;
+    # it can result in an F-score that is not between precision and recall. Weighted recall is equal to accuracy.

@@ -662,11 +662,12 @@ def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results
 
     label_maps = get_label_maps(f"{results_path}/{gal_name}")
 
-    draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
+    draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
     if not real_space_only:
+        draw_2d_graph_real_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
         draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
         draw_2d_graph_circ_scatterplot(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
-        draw_2d_graph_circ_histogram(gal, average_comp, complete_comp, single_comp, ward_comp, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
+        
 
 
 

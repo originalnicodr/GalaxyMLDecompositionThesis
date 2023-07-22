@@ -313,7 +313,7 @@ if __name__ == "__main__":
     outliers_removal_method = args.get("outliersremovalmethod")
 
     print(f"analizing galaxy: {galaxy_name}")
-    #analyze_galaxy_clusters_linkages(galaxy_name, directory_name, clustering_method, outliers_removal_method)
+    analyze_galaxy_clusters_linkages(galaxy_name, directory_name, clustering_method, outliers_removal_method)
 
 
     """
