@@ -155,6 +155,9 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
 
     axs[0,1].set_ylabel("")
     axs[0,2].set_ylabel("")
+    axs[0,0].set_xlabel("")
+    axs[0,1].set_xlabel("")
+    axs[0,2].set_xlabel("")
 
     #-------------Ward---------------
     if graph_all_linkes:
@@ -171,8 +174,16 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
 
     axs[1,1].set_ylabel("")
     axs[1,2].set_ylabel("")
+    axs[1,0].set_xlabel(f"{axs[1,2].get_xlabel()} [kpc]")
+    axs[1,1].set_xlabel(f"{axs[1,2].get_xlabel()} [kpc]")
+    axs[1,2].set_xlabel(f"{axs[1,2].get_xlabel()} [kpc]")
+
 
     if graph_all_linkes:
+        axs[1,0].set_xlabel("")
+        axs[1,1].set_xlabel("")
+        axs[1,2].set_xlabel("")
+
         #-------------Complete---------------
         plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
@@ -184,6 +195,9 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
 
         axs[2,1].set_ylabel("")
         axs[2,2].set_ylabel("")
+        axs[2,0].set_xlabel("")
+        axs[2,1].set_xlabel("")
+        axs[2,2].set_xlabel("")
 
         #-------------Average---------------
         plt.text(-0.15, 0.355, "Average", fontsize=14, transform=plt.gcf().transFigure)
@@ -196,6 +210,9 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
 
         axs[3,1].set_ylabel("")
         axs[3,2].set_ylabel("")
+        axs[3,0].set_xlabel("")
+        axs[3,1].set_xlabel("")
+        axs[3,2].set_xlabel("")
 
         #-------------Single---------------
         plt.text(-0.15, 0.185, "Single", fontsize=14, transform=plt.gcf().transFigure)
@@ -208,6 +225,9 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
 
         axs[4,1].set_ylabel("")
         axs[4,2].set_ylabel("")
+        axs[4,0].set_xlabel(f"{axs[4,0].get_xlabel()} [kpc]")
+        axs[4,1].set_xlabel(f"{axs[4,1].get_xlabel()} [kpc]")
+        axs[4,2].set_xlabel(f"{axs[4,2].get_xlabel()} [kpc]")
 
     axs[-1,0].set_xlabel("x")
     axs[-1,1].set_xlabel("y")
@@ -216,7 +236,7 @@ def draw_2d_graph_real_histogram(gal, average_comp, complete_comp, single_comp, 
     for ax in fig.axes:
         #ax.set_xticklabels([])
         #ax.set_yticklabels([])
-        ax.set_xlabel(f"{ax.get_xlabel()} [kpc]")
+        #ax.set_xlabel(f"{ax.get_xlabel()} [kpc]")
         ax.set_xlim([-20,20])
         from matplotlib.ticker import MultipleLocator
         ax.xaxis.set_minor_locator(MultipleLocator(2))
@@ -681,7 +701,7 @@ if __name__ == "__main__":
     # Construct the argument parser
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
-    ap.add_argument("-galn", "--galaxyname", required=True, help="Include the extension as well!")
+    ap.add_argument("-galn", "--galaxyname", required=True)
     ap.add_argument("-rso", "--realspaceonly", required=False, action='store_true', help="Do only the graphs in real space.")
 
     args = vars(ap.parse_args())
