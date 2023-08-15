@@ -50,9 +50,35 @@ def get_ground_truth_method_in_main_dir(main_directory):
                 method_id = gal_method_id
                 method_name = gal_method_name
 
+    return method_id, method_name
+
+def get_clustering_method(results_path, gal_name):
+    print(results_path, gal_name)
+    if os.path.exists(f'{results_path}/{gal_name}/ward.data'):
+        return "ward", "Clustering Jerarquico"
+    if os.path.exists(f'{results_path}/{gal_name}/fuzzy.data'):
+        return "fuzzy", "Fuzzy Clustering"
+    raise ValueError("No clustering methods labels found")
+
+
+def get_clustering_method_in_main_dir(main_directory):
+    method_id = None
+    method_name = None
+    for method_dir in os.listdir(main_directory):
+
+        if os.path.isdir(f"{main_directory}/{method_dir}"):
+            for gal_dir in os.listdir(f"{main_directory}/{method_dir}"):
+                gal_method_id, gal_method_name = get_clustering_method(f"{main_directory}/{method_dir}", gal_dir)
+                
+                if (not method_id is None) and  (not method_name is None) and method_id != gal_method_id and gal_method_name != method_name:
+                    raise ValueError("There were multiple methods used!")
+
+                method_id = gal_method_id
+                method_name = gal_method_name
+
     return method_id, method_name 
 
-def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name):
+def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name):
     silhouette = df[df.metric == "Silhouette"]
 
     ground_truth = silhouette[silhouette.method == ground_truth_method_id]
@@ -63,7 +89,7 @@ def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name)
     ward = silhouette[silhouette.method == "ward"]
     ward.index = ward.galaxy
     ward = ward.drop(["metric", "method", "galaxy"], axis=1)
-    ward.set_axis(["Clustering Jerarquico"], axis='columns', inplace=True)
+    ward.set_axis([clustering_method_name], axis='columns', inplace=True)
 
     print(ward)
     print(ground_truth)
@@ -74,7 +100,7 @@ def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name)
 
     return silhouette
 
-def get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name):
+def get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name):
     davies_bouldin = df[df.metric == "Davies Bouldin"]
 
     ground_truth = davies_bouldin[davies_bouldin.method == ground_truth_method_id]
@@ -85,7 +111,7 @@ def get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_na
     ward = davies_bouldin[davies_bouldin.method == "ward"]
     ward.index = ward.galaxy
     ward = ward.drop(["metric", "method", "galaxy"], axis=1)
-    ward.set_axis(["Clustering Jerarquico"], axis='columns', inplace=True)
+    ward.set_axis([clustering_method_name], axis='columns', inplace=True)
 
     davies_bouldin = pd.concat([ground_truth, ward], axis=1)
 
@@ -99,13 +125,14 @@ def silhouette_heatmap(main_directory):
     silhouette_vmax = 1
 
     ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(main_directory)
+    clustering_method_id, clustering_method_name = get_clustering_method_in_main_dir(main_directory)
 
     dfs = []
     for folder in os.listdir(main_directory):
         print(folder)
         if os.path.isdir(f"{main_directory}/{folder}"):
             df = internal_metrics_df(f"{main_directory}/{folder}")
-            silhouette = get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name)
+            silhouette = get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name)
 
             dfs.append(silhouette)
 
@@ -118,13 +145,13 @@ def silhouette_heatmap(main_directory):
 
     print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
     print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
-    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
-    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
+    print(f"{clustering_method_name} rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
+    print(f"{clustering_method_name} Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
 
     print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
     print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
-    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
-    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
+    print(f"{clustering_method_name} rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
+    print(f"{clustering_method_name} Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
 
     heatmap = sns.heatmap(df_new, vmin=silhouette_vmin, vmax=silhouette_vmax, annot=True, fmt='.3f')
 
@@ -144,12 +171,13 @@ def davis_bouldin_heatmap(main_directory):
     import matplotlib.pyplot as plt
 
     ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(main_directory)
+    clustering_method_id, clustering_method_name = get_clustering_method_in_main_dir(main_directory)
 
     dfs = []
     for folder in os.listdir(main_directory):
         if os.path.isdir(f"{main_directory}/{folder}"):
             df = internal_metrics_df(f"{main_directory}/{folder}")
-            davis_bouldin = get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name)
+            davis_bouldin = get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name)
 
             dfs.append(davis_bouldin)
 
@@ -162,13 +190,13 @@ def davis_bouldin_heatmap(main_directory):
 
     print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).mean())
     print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).mean())
-    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
-    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
+    print(f"{clustering_method_name} rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).mean())
+    print(f"{clustering_method_name} Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).mean())
 
     print(f"{ground_truth_method_name} rcut diff mean", (df_new.iloc[:, 1] - df_new.iloc[:, 0]).median())
     print(f"{ground_truth_method_name} Isolation Forest diff mean", (df_new.iloc[:, 2] - df_new.iloc[:, 0]).median())
-    print("Clustering Jerarquico rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
-    print("Clustering Jerarquico Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
+    print(f"{clustering_method_name} rcut diff mean", (df_new.iloc[:, 4] - df_new.iloc[:, 3]).median())
+    print(f"{clustering_method_name} Isolation Forest diff mean", (df_new.iloc[:, 5] - df_new.iloc[:, 3]).median())
 
     davies_bouldin_vmin = df_new.to_numpy().min()
     davies_bouldin_median = np.median(df_new.to_numpy())
@@ -198,19 +226,26 @@ def read_labels_from_file(gal_name, linkage, results_path):
     return data["labels"].to_numpy()
 
 def get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, results_path, average_method):
+    clustering_method_id, clustering_method_name = get_clustering_method_in_main_dir(results_path)
+
     galaxies = get_galaxies(results_path)
     rows = []
     for gal in galaxies:
         ground_truth = read_labels_from_file(gal, ground_truth_method_id, f"{results_path}/{method_folder}")
         ground_truth = [lmaps[method_folder][gal]["gchop_lmap"][l] for l in ground_truth]
 
-        ward = read_labels_from_file(gal, "ward", f"{results_path}/{method_folder}")
-        ward = [lmaps[method_folder][gal]["method_lmap"]["ward"][l] for l in ward]
+        if clustering_method_id == 'ward':
+            clustering_method_lmap = lmaps[method_folder][gal]["method_lmap"]["ward"]
+        else:
+            clustering_method_lmap = lmaps[method_folder][gal]["method_lmap"]
+
+        clustering_results = read_labels_from_file(gal, clustering_method_id, f"{results_path}/{method_folder}")
+        clustering_results = [clustering_method_lmap[l] for l in clustering_results]
         
         row = {
             "Galaxy": gal.split("_", 1)[-1].rsplit(".", 1)[0].replace("_", "-"),
-            "Precision": metrics.precision_score(ground_truth, ward, average=average_method),
-            "Recall": metrics.recall_score(ground_truth, ward, average=average_method),
+            "Precision": metrics.precision_score(ground_truth, clustering_results, average=average_method),
+            "Recall": metrics.recall_score(ground_truth, clustering_results, average=average_method),
         }
         rows.append(row)
 
@@ -268,10 +303,18 @@ def get_label_maps(path):
     lmaps = {}
     with open(f'{path}/lmaps.json') as json_file:
         lmaps = json.load(json_file)
-    
+
     lmaps["gchop_lmap"] = {int(key) : val for key, val in lmaps["gchop_lmap"].items()}
-    for linkage, lmap in lmaps["method_lmap"].items():
-        lmaps["method_lmap"][linkage] = {int(key) : val for key, val in lmap.items()}
+
+    has_sub_methods_lmaps = any(isinstance(i,dict) for i in lmaps["method_lmap"].values())
+
+    print("has_sub_methods_lmaps", has_sub_methods_lmaps)
+
+    if has_sub_methods_lmaps:
+        for sub_method_key, lmap in lmaps["method_lmap"].items():
+            lmaps["method_lmap"][sub_method_key] = {int(key) : val for key, val in lmap.items()}
+    else: 
+        lmaps["method_lmap"] = {int(key) : val for key, val in lmaps["method_lmap"].items()}
 
     return lmaps
 
@@ -329,8 +372,8 @@ if __name__ == "__main__":
 
     lmaps = get_all_methods_label_maps(results_directory)
 
-    silhouette_heatmap(results_directory)
-    davis_bouldin_heatmap(results_directory)
+    #silhouette_heatmap(results_directory)
+    #davis_bouldin_heatmap(results_directory)
     #presicion_heatmap(lmaps, results_directory, 'micro')
     presicion_heatmap(lmaps, results_directory, 'weighted')
     #recall_heatmap(lmaps, results_directory, 'micro')

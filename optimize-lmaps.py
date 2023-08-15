@@ -17,17 +17,23 @@ def get_label_maps(path):
     lmaps = {}
     with open(f'{path}/lmaps.json') as json_file:
         lmaps = json.load(json_file)
-    
+
     lmaps["gchop_lmap"] = {int(key) : val for key, val in lmaps["gchop_lmap"].items()}
-    for linkage, lmap in lmaps["method_lmap"].items():
-        lmaps["method_lmap"][linkage] = {int(key) : val for key, val in lmap.items()}
+
+    has_sub_methods_lmaps = any(isinstance(i,dict) for i in lmaps["method_lmap"].values())
+
+    if has_sub_methods_lmaps:
+        for sub_method_key, lmap in lmaps["method_lmap"].items():
+            lmaps["method_lmap"][sub_method_key] = {int(key) : val for key, val in lmap.items()}
+    else: 
+        lmaps["method_lmap"] = {int(key) : val for key, val in lmaps["method_lmap"].items()}
 
     return lmaps
 
-def optimize_label_maps(gal_res_path, pre_mapped_ground_truth_labels, pre_mapped_method_labels, linkage_id):
+def optimize_label_maps(gal_res_path, pre_mapped_ground_truth_labels, pre_mapped_method_labels, sub_method_key):
     original_lmap = get_label_maps(gal_res_path)
     ground_truth_lmap = original_lmap["gchop_lmap"]
-    method_lmap = original_lmap["method_lmap"][linkage_id] #this is the same for all linkages
+    method_lmap = original_lmap["method_lmap"][sub_method_key] if sub_method_key else original_lmap["method_lmap"] #this is the same for all linkages
 
     ground_truth_labels = [ground_truth_lmap[l] for l in pre_mapped_ground_truth_labels]
 
@@ -44,7 +50,10 @@ def optimize_label_maps(gal_res_path, pre_mapped_ground_truth_labels, pre_mapped
         if recall_value > best_lmap[1]:
             best_lmap = (new_lmap, recall_value)
 
-    original_lmap["method_lmap"][linkage_id] = best_lmap[0]
+    if sub_method_key:
+        original_lmap["method_lmap"][sub_method_key] = best_lmap[0]
+    else:
+        original_lmap["method_lmap"] = best_lmap[0]
 
     with open(f"{gal_res_path}/lmaps.json", "w") as lmapsfile:
         json.dump(original_lmap, lmapsfile, indent = 4)
@@ -58,22 +67,27 @@ def optimize_lmaps(gal_name, results_path="results"):
     else:
         raise ValueError("No ground truth labels found")
 
-    ward_labels = read_labels_from_file(gal_name, "ward", results_path)
-    optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, ward_labels, "ward")
+    if os.path.exists(f'{results_path}/{gal_name}/ward.data'):
 
-    if (
-        os.path.exists(f'{results_path}/{gal_name}/complete.data') and
-        os.path.exists(f'{results_path}/{gal_name}/average.data') and
-        os.path.exists(f'{results_path}/{gal_name}/single.data')
-    ):
-        average_labels = read_labels_from_file(gal_name, "average", results_path)
-        complete_labels = read_labels_from_file(gal_name, "complete", results_path)
-        single_labels = read_labels_from_file(gal_name, "single", results_path)
+        ward_labels = read_labels_from_file(gal_name, "ward", results_path)
+        optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, ward_labels, "ward")
 
-        optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, complete_labels, "complete")
-        optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, average_labels, "average")
-        optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, single_labels, "single")
+        if (
+            os.path.exists(f'{results_path}/{gal_name}/complete.data') and
+            os.path.exists(f'{results_path}/{gal_name}/average.data') and
+            os.path.exists(f'{results_path}/{gal_name}/single.data')
+        ):
+            average_labels = read_labels_from_file(gal_name, "average", results_path)
+            complete_labels = read_labels_from_file(gal_name, "complete", results_path)
+            single_labels = read_labels_from_file(gal_name, "single", results_path)
 
+            optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, complete_labels, "complete")
+            optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, average_labels, "average")
+            optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, single_labels, "single")
+
+    elif os.path.exists(f'{results_path}/{gal_name}/fuzzy.data'):
+        fuzzy_labels = read_labels_from_file(gal_name, "fuzzy", results_path)
+        optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, fuzzy_labels, None)
 
 if __name__ == "__main__":
     script_path = os.path.dirname( __file__ )

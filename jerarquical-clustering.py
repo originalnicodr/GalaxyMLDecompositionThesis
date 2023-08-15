@@ -284,10 +284,11 @@ def get_label_maps(lmaps_path):
     
     return lmaps
 
-def expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path):
-    lmaps["method_lmap"]["complete"] = lmaps["method_lmap"]["ward"]
-    lmaps["method_lmap"]["average"] = lmaps["method_lmap"]["ward"]
-    lmaps["method_lmap"]["single"] = lmaps["method_lmap"]["ward"]
+def expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path, linkages):
+    if linkages != ["ward"]:
+        lmaps["method_lmap"]["complete"] = lmaps["method_lmap"]["ward"]
+        lmaps["method_lmap"]["average"] = lmaps["method_lmap"]["ward"]
+        lmaps["method_lmap"]["single"] = lmaps["method_lmap"]["ward"]
 
     import json
     with open(lmaps_path, "w") as lmapsfile:
@@ -334,8 +335,13 @@ def analyze_galaxy_n_clusters_linkages(
 
     lmaps_path = f'{results_path}/{gal_name}/lmaps.json'
     lmaps = get_label_maps(lmaps_path)
-    if linkages != ["ward"]:
-        expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path)
+
+    # Adjust lmaps for multiple linkages types
+    ward_lmap = lmaps["method_lmap"]
+    lmaps["method_lmap"] = {}
+    lmaps["method_lmap"]["ward"] = ward_lmap
+
+    expand_lmaps_with_more_linkage_methods(lmaps, lmaps_path, linkages)
 
     n_clusters = len(lmaps["method_lmap"]["ward"])
 
@@ -394,7 +400,7 @@ if __name__ == "__main__":
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
     # Minimum parameters is refered to the sames used in the ground truth method we will be comparing with
-    ap.add_argument("-p", "--parameters", required=False, default="all", help="all or minimum")
+    ap.add_argument("-p", "--parameters", required=False, default="minimum", help="all or minimum")
     ap.add_argument("-c", "--complete", required=False, action='store_true', help="Use all available linkages instead of just ward")
 
     args = vars(ap.parse_args())

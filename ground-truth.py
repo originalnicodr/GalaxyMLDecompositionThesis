@@ -232,7 +232,7 @@ def save_lmap(lmap, unique_labels, save_path):
     lmaps = {}
     lmaps["gchop_lmap"] = lmap
     lmaps["method_lmap"] = {}
-    lmaps["method_lmap"]["ward"] = {idx: lmap[key] for idx, key in enumerate(unique_labels)}
+    lmaps["method_lmap"] = {idx: lmap[key] for idx, key in enumerate(unique_labels)}
 
     import json
     with open(f"{save_path}/lmaps.json", "w") as lmapsfile:
