@@ -144,9 +144,9 @@ def draw_2d_graph_real_histogram(gal, clustering_results, clustering_method, gro
     multiple_sub_methods = len(clustering_results) > 1
 
     if multiple_sub_methods:
-        fig, axs = plt.subplots(1 + len(clustering_results), 3, figsize=(6, 2*5), sharex=False, sharey=False)
+        fig, axs = plt.subplots(1 + len(clustering_results), 3, figsize=(6, 2*5), sharex=False, sharey='col')
     else:
-        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey=False)
+        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey='col')
 
     #-------------Ground Truth---------------
     if multiple_sub_methods:
@@ -270,6 +270,8 @@ def draw_2d_graph_real_histogram(gal, clustering_results, clustering_method, gro
         ax.yaxis.set_minor_locator(MultipleLocator(0.01))
     
         ax.tick_params(axis='both', labelleft=True, labelbottom=False)
+
+        ax.set_box_aspect(aspect=1)
     
     fig.axes[-3].tick_params(axis='x', labelbottom=True)
     fig.axes[-2].tick_params(axis='x', labelbottom=True)
@@ -414,6 +416,8 @@ def draw_2d_graph_circ_scatterplot(gal, clustering_results, clustering_method, g
         ax.xaxis.set_minor_locator(MultipleLocator(0.25))
         ax.yaxis.set_minor_locator(MultipleLocator(0.25))
         ax.tick_params(axis='both', labelleft=True, labelbottom=False)
+
+        ax.set_box_aspect(aspect=1)
     
     fig.axes[-3].tick_params(axis='x', labelbottom=True)
     fig.axes[-2].tick_params(axis='x', labelbottom=True)
@@ -441,9 +445,9 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
     multiple_sub_methods = len(clustering_results) > 1
 
     if multiple_sub_methods:
-        fig, axs = plt.subplots(1 + len(clustering_results), 3, figsize=(6, 2*5), sharex=False, sharey=False)
+        fig, axs = plt.subplots(1 + len(clustering_results), 3, figsize=(6, 2*5), sharex=False, sharey='col')
     else:
-        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey=False)
+        fig, axs = plt.subplots(2, 3, figsize=(6, 2*2), sharex=False, sharey='col')
 
     #-------------Ground Truth---------------
     if multiple_sub_methods:
@@ -462,6 +466,8 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
 
     axs[0,1].set_ylabel("", fontsize=10)
     axs[0,2].set_ylabel("", fontsize=10)
+    axs[0,0].set_xlabel("", fontsize=10)
+    axs[0,1].set_xlabel("", fontsize=10)
     axs[0,2].set_xlabel("", fontsize=10)
 
     axs[0,1].set_xlim([0, 1.5])
@@ -487,6 +493,11 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
         axs[1,1].set_xlim([0, 1.5])
 
         if multiple_sub_methods:
+
+            axs[1,0].set_xlabel("", fontsize=10)
+            axs[1,1].set_xlabel("", fontsize=10)
+            axs[1,2].set_xlabel("", fontsize=10)
+
             #-------------Complete---------------
             plt.text(-0.15, 0.525, "Complete", fontsize=14, transform=plt.gcf().transFigure)
 
@@ -498,6 +509,8 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
 
             axs[2,1].set_ylabel("", fontsize=10)
             axs[2,2].set_ylabel("", fontsize=10)
+            axs[2,0].set_xlabel("", fontsize=10)
+            axs[2,1].set_xlabel("", fontsize=10)
             axs[2,2].set_xlabel("", fontsize=10)
 
             axs[2,1].set_xlim([0, 1.5])
@@ -513,6 +526,8 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
 
             axs[3,1].set_ylabel("", fontsize=10)
             axs[3,2].set_ylabel("", fontsize=10)
+            axs[3,0].set_xlabel("", fontsize=10)
+            axs[3,1].set_xlabel("", fontsize=10)
             axs[3,2].set_xlabel("", fontsize=10)
 
             axs[3,1].set_xlim([0, 1.5])
@@ -556,6 +571,8 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
         ax.xaxis.set_minor_locator(MultipleLocator(0.1))
         ax.yaxis.set_minor_locator(MultipleLocator(0.1))
         ax.tick_params(axis='both', labelleft=True, labelbottom=False)
+
+        ax.set_box_aspect(aspect=1)
     
     fig.axes[-3].tick_params(axis='x', labelbottom=True)
     fig.axes[-2].tick_params(axis='x', labelbottom=True)

@@ -293,7 +293,7 @@ def get_ground_truth_method(results_path, gal_name):
 
 
 def analyze_galaxy_n_clusters_linkages(
-    gal_name, dataset_directory, parameters, error, maxiter, results_path="results"
+    gal_name, dataset_directory, parameters, results_path="results"
 ):
     print("Getting galaxy data")
     gal, X = get_galaxy_data(dataset_directory, results_path, gal_name)
@@ -333,40 +333,48 @@ def analyze_galaxy_n_clusters_linkages(
     # del
     # gc.colect
 
-    cntr, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=0.35, error=error, maxiter=maxiter, seed=42)
+    iterations_multiplier = [2, 50, 30]#[5, 10, 15, 20, 30]#[0.1, 0.3, 0.5, 0.7, 0.9] #mejor abadi: 0.3, y 0.7, mejor autogmm: 0.75, 0.8
+    #iterations_multiplier = [0.6, 0.65, 0.7, 0.75, 0.8]
+    errors = [0.01, 0.005] # 0.001, 0.0005
+    max_iterations = [1000, 5000]
 
-    print(f"Iterations: {iterations}")
-    
-    labels = np.array(u.argmax(axis=0))
+    for m in iterations_multiplier:
+        for error in errors:
+            for maxiter in max_iterations:
+                print(f"Current clustering: m={m} error={error}, maxiter={maxiter}")
+                cntr, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=m, error=error, maxiter=maxiter, seed=42)
 
-    #volvemos a obtener el gal por que lo eliminamos para hacer memoria para el fit
-    gal, _ = get_galaxy_data(dataset_directory, results_path, gal_name)
+                print(f"Iterations: {iterations}")
+                
+                labels = np.array(u.argmax(axis=0))
 
+                #volvemos a obtener el gal por que lo eliminamos para hacer memoria para el fit
+                gal, _ = get_galaxy_data(dataset_directory, results_path, gal_name)
 
-    comp = build_comp(gal, labels)
-    internal_evaluation = Internal(comp)
+                comp = build_comp(gal, labels)
+                internal_evaluation = Internal(comp)
 
-    if not os.path.exists(results_path + "/" + gal_name + "/"):
-        os.makedirs(results_path + "/" + gal_name + "/")
+                if not os.path.exists(results_path + "/" + gal_name + "/"):
+                    os.makedirs(results_path + "/" + gal_name + "/")
 
-    with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
-        # Esta bien usar todas las columnas para calcular el score, no?
-        s_score = internal_evaluation.silhouette(labels)
-        db_score = internal_evaluation.davies_bouldin(labels)
+                with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
+                    # Esta bien usar todas las columnas para calcular el score, no?
+                    s_score = internal_evaluation.silhouette(labels)
+                    db_score = internal_evaluation.davies_bouldin(labels)
 
-        print("Silhouette: ", s_score)
-        print("Davies Bouldin: ", db_score, "\n")
+                    print("Silhouette: ", s_score)
+                    print("Davies Bouldin: ", db_score, "\n")
 
-        f.write(f"fuzzy,Silhouette,{s_score}\n")
-        f.write(f"fuzzy,Davies Bouldin,{db_score}\n")
+                    f.write(f"fuzzy,Silhouette,{s_score},m,{m},error,{error},maxiter,{maxiter},iterations,{iterations}\n")
+                    f.write(f"fuzzy,Davies Bouldin,{db_score},m,{m},error,{error},maxiter,{maxiter},iterations,{iterations}\n")
 
-        dump_results(X, labels, f'{results_path}/{gal_name}/fuzzy')
+                    dump_results(X, labels, f'{results_path}/{gal_name}/fuzzy - m={m} error={error}, maxiter={maxiter}')
 
-    del labels
-    del gal
-    del comp
-    del internal_evaluation
-    gc.collect()
+                del labels
+                del gal
+                del comp
+                del internal_evaluation
+                gc.collect()
 
 if __name__ == "__main__":
     script_path = os.path.dirname( __file__ )
@@ -381,24 +389,20 @@ if __name__ == "__main__":
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
     # Minimum parameters is refered to the sames used in the ground truth method we will be comparing with
     ap.add_argument("-p", "--parameters", required=False, default="minimum", help="all or minimum")
-    ap.add_argument("-e", "--error", required=False, default="0.005", help="stopping criterion")
-    ap.add_argument("-m", "--maxiter", required=False, default="1000", help="maximum number of iterations allowed")
 
     args = vars(ap.parse_args())
 
     galaxy_name = args.get("galaxyname")
     complete_linkage = args.get("complete")
     parameters = args.get("parameters")
-    error = float(args.get("error"))
-    maxiter = int(args.get("maxiter"))
 
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters, error, maxiter)
+        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
             for gal_name in filenames:
                 print(f"analizing galaxy: {gal_name}")
-                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters, error, maxiter)
+                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters)
