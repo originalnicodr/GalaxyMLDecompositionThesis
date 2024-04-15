@@ -279,7 +279,7 @@ def draw_2d_graph_real_histogram(gal, clustering_results, clustering_method, gro
 
     plt.subplots_adjust(wspace=0.4, hspace=0.1)
 
-    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9), ncol=2)
 
     fig.suptitle(f'{gal_name} - {ground_truth_method}')
     fig.subplots_adjust(top=0.95 if multiple_sub_methods else 0.9)
@@ -425,7 +425,7 @@ def draw_2d_graph_circ_scatterplot(gal, clustering_results, clustering_method, g
 
     plt.subplots_adjust(wspace=0.5, hspace=0.1)
 
-    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9), ncol=2)
 
     fig.suptitle(f'{gal_name} - {ground_truth_method}')
     fig.subplots_adjust(top=0.95 if multiple_sub_methods else 0.9)
@@ -580,7 +580,7 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
 
     plt.subplots_adjust(wspace=0.3, hspace=0.1)
 
-    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.8), ncol=2)
+    sns.move_legend(plot_with_legend, "lower center", bbox_to_anchor=(0.5, -0.9), ncol=2)
 
     fig.suptitle(f'{gal_name} - {ground_truth_method}')
     fig.subplots_adjust(top=0.95 if multiple_sub_methods else 0.9)
@@ -739,6 +739,8 @@ def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results
     else:
         raise ValueError("No ground truth labels found")
 
+    print("total: ", len(ground_truth_labels[ground_truth_labels == 0]) + len(ground_truth_labels[ground_truth_labels == 1]))
+
     clustering_method = None
     clustering_results = {}
 
@@ -775,13 +777,22 @@ def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results
 
     label_maps = get_label_maps(f"{results_path}/{gal_name}")
 
+    #print("ground truth Spheroid", len(ground_truth_labels[ground_truth_labels == 0]))
+    #print("ground truth Disk", len(ground_truth_labels[ground_truth_labels == 1]))
+    #print("resto: ", len(ground_truth_labels[np.logical_and(ground_truth_labels != 0, ground_truth_labels != 1)]))
+    #print("unique: ", np.unique(ground_truth_labels))
+    #print("total: ", len(ground_truth_labels[ground_truth_labels == 0]) + len(ground_truth_labels[ground_truth_labels == 1]))
+    #print("Ward Spheroid", len(clustering_results["ward"].labels[clustering_results["ward"].labels == 1]))
+    #print("Ward Disk", len(clustering_results["ward"].labels[clustering_results["ward"].labels == 0]))
+    #print("resto: ", len(clustering_results["ward"].labels[np.logical_and(clustering_results["ward"].labels != 0, clustering_results["ward"].labels != 1)]))
+    #print("unique: ", np.unique(clustering_results["ward"].labels))
+    #print("total: ", len(clustering_results["ward"].labels))
+
     draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
     if not real_space_only:
         draw_2d_graph_real_scatterplot(gal, clustering_results, clustering_method, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
         draw_2d_graph_real_histogram(gal, clustering_results, clustering_method, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
         draw_2d_graph_circ_scatterplot(gal, clustering_results, clustering_method, ground_truth_comp, ground_truth_method, label_maps, gal_name, results_path)
-        
-
 
 
 if __name__ == "__main__":

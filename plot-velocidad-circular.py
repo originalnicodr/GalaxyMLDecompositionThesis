@@ -227,6 +227,14 @@ def get_ground_truth_method_in_main_dir(main_directory):
 
     return method_id, method_name 
 
+def get_clustering_method(results_path, gal_name):
+    print(results_path, gal_name)
+    if os.path.exists(f'{results_path}/{gal_name}/ward.data'):
+        return "ward", "Clustering Jerarquico"
+    if os.path.exists(f'{results_path}/{gal_name}/fuzzy.data'):
+        return "fuzzy", "Fuzzy Clustering"
+    raise ValueError("No clustering methods labels found")
+
 def plot_gal(gal_name, dataset_dir, lmaps, results_directory):
     print("Getting galaxy data")
     print(results_directory)
@@ -257,14 +265,16 @@ def plot_gal(gal_name, dataset_dir, lmaps, results_directory):
 
             dataframes.append(df)
 
-            ward_labels = read_labels_from_file(gal_name, "ward", f"{results_directory}/{method_folder}")
-            ward_comp = build_comp(gal, ward_labels)
+            clustering_method_id, clustering_method_name = get_clustering_method(f"{results_directory}/{method_folder}", gal_name)
 
-            df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z", "m"], ward_comp, lmap=None)
+            trained_method_labels = read_labels_from_file(gal_name, clustering_method_id, f"{results_directory}/{method_folder}")
+            trained_method_comp = build_comp(gal, trained_method_labels)
+
+            df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z", "m"], trained_method_comp, lmap=None)
             df.rename(columns={'Labels':'labels'}, inplace=True)
-            df["clustering method"] = 'Clustering Jerarquico'
+            df["clustering method"] = clustering_method_name
             df["outlier removal method"] = method_folder
-            df["labels"] = assign_labels(df["labels"].to_numpy(), lmaps[method_folder]["method_lmap"]['ward'])
+            df["labels"] = assign_labels(df["labels"].to_numpy(), lmaps[method_folder]["method_lmap"]['ward'] if clustering_method_id == "ward" else lmaps[method_folder]["method_lmap"])
             df = df.replace(to_replace='None', value=np.nan).dropna()
             df["radius"] = np.sqrt(df.x ** 2 + df.y ** 2 + df.z ** 2)
             df["vcir"] = add_circ_velocity(df)["vcir"]
@@ -289,8 +299,13 @@ def get_label_maps(path):
         lmaps = json.load(json_file)
     
     lmaps["gchop_lmap"] = {int(key) : val for key, val in lmaps["gchop_lmap"].items()}
-    for linkage, lmap in lmaps["method_lmap"].items():
-        lmaps["method_lmap"][linkage] = {int(key) : val for key, val in lmap.items()}
+    has_sub_methods_lmaps = any(isinstance(i,dict) for i in lmaps["method_lmap"].values())
+
+    if has_sub_methods_lmaps:
+        for sub_method_key, lmap in lmaps["method_lmap"].items():
+            lmaps["method_lmap"][sub_method_key] = {int(key) : val for key, val in lmap.items()}
+    else: 
+        lmaps["method_lmap"] = {int(key) : val for key, val in lmaps["method_lmap"].items()}
 
     return lmaps
 
@@ -311,7 +326,7 @@ def get_all_methods_for_gal_label_maps(main_directory, gal_name):
 if __name__ == "__main__":
     script_path = os.path.dirname( __file__ )
     print(script_path)
-    dataset_dir = "tests/datasets_prod"
+    dataset_dir = "tests/datasets"
     print(dataset_dir)
 
     import argparse

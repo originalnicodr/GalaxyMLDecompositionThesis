@@ -78,7 +78,7 @@ def get_clustering_method_in_main_dir(main_directory):
 
     return method_id, method_name 
 
-def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name):
+def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_id, clustering_method_name):
     silhouette = df[df.metric == "Silhouette"]
 
     ground_truth = silhouette[silhouette.method == ground_truth_method_id]
@@ -86,13 +86,10 @@ def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name,
     ground_truth = ground_truth.drop(["metric", "method", "galaxy"], axis=1)
     ground_truth.set_axis([ground_truth_method_name], axis='columns', inplace=True)
 
-    ward = silhouette[silhouette.method == "ward"]
+    ward = silhouette[silhouette.method == clustering_method_id]
     ward.index = ward.galaxy
     ward = ward.drop(["metric", "method", "galaxy"], axis=1)
     ward.set_axis([clustering_method_name], axis='columns', inplace=True)
-
-    print(ward)
-    print(ground_truth)
 
     silhouette = pd.concat([ground_truth, ward], axis=1)
 
@@ -100,7 +97,8 @@ def get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name,
 
     return silhouette
 
-def get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name):
+def get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_id, clustering_method_name):
+    print(f"clustering_method_name: {clustering_method_name}")
     davies_bouldin = df[df.metric == "Davies Bouldin"]
 
     ground_truth = davies_bouldin[davies_bouldin.method == ground_truth_method_id]
@@ -108,7 +106,7 @@ def get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_na
     ground_truth = ground_truth.drop(["metric", "method", "galaxy"], axis=1)
     ground_truth.set_axis([ground_truth_method_name], axis='columns', inplace=True)
 
-    ward = davies_bouldin[davies_bouldin.method == "ward"]
+    ward = davies_bouldin[davies_bouldin.method == clustering_method_id]
     ward.index = ward.galaxy
     ward = ward.drop(["metric", "method", "galaxy"], axis=1)
     ward.set_axis([clustering_method_name], axis='columns', inplace=True)
@@ -132,7 +130,7 @@ def silhouette_heatmap(main_directory):
         print(folder)
         if os.path.isdir(f"{main_directory}/{folder}"):
             df = internal_metrics_df(f"{main_directory}/{folder}")
-            silhouette = get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name)
+            silhouette = get_silhouette_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_id, clustering_method_name)
 
             dfs.append(silhouette)
 
@@ -158,7 +156,7 @@ def silhouette_heatmap(main_directory):
     heatmap.set(ylabel='Galaxia')
 
     plt.text(0.24, 0.9, ground_truth_method_name, fontsize=14, transform=plt.gcf().transFigure)
-    plt.text(0.53, 0.9, "CJ Ward", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.53, 0.9, clustering_method_name, fontsize=14, transform=plt.gcf().transFigure)
     
     fig = heatmap.get_figure()
     fig.suptitle(f"Comparacion Silhouette - {ground_truth_method_name}")
@@ -177,7 +175,7 @@ def davis_bouldin_heatmap(main_directory):
     for folder in os.listdir(main_directory):
         if os.path.isdir(f"{main_directory}/{folder}"):
             df = internal_metrics_df(f"{main_directory}/{folder}")
-            davis_bouldin = get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_name)
+            davis_bouldin = get_davis_bouldin_results(df, ground_truth_method_id, ground_truth_method_name, clustering_method_id, clustering_method_name)
 
             dfs.append(davis_bouldin)
 
@@ -207,7 +205,7 @@ def davis_bouldin_heatmap(main_directory):
     heatmap.set(ylabel='Galaxia')
 
     plt.text(0.24, 0.9, ground_truth_method_name, fontsize=14, transform=plt.gcf().transFigure)
-    plt.text(0.53, 0.9, "CJ Ward", fontsize=14, transform=plt.gcf().transFigure)
+    plt.text(0.53, 0.9, clustering_method_name, fontsize=14, transform=plt.gcf().transFigure)
     
     fig = heatmap.get_figure()
     fig.suptitle(f"Comparacion Davis Bouldin - {ground_truth_method_name}")
@@ -225,7 +223,7 @@ def read_labels_from_file(gal_name, linkage, results_path):
     
     return data["labels"].to_numpy()
 
-def get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, results_path, average_method):
+def get_precision_recall_df(lmaps, ground_truth_method_id, method_folder, results_path, average_method):
     clustering_method_id, clustering_method_name = get_clustering_method_in_main_dir(results_path)
 
     galaxies = get_galaxies(results_path)
@@ -257,24 +255,24 @@ def get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, result
         
     return df
 
-def presicion_heatmap(lmaps, main_directory, average_method):
+def precision_heatmap(lmaps, main_directory, average_method):
     ground_truth_method_id, ground_truth_method_name = get_ground_truth_method_in_main_dir(main_directory)
 
     dfs = []
     for method_folder in os.listdir(main_directory):
         if os.path.isdir(f"{main_directory}/{method_folder}"):
-            df = get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, main_directory, average_method)
+            df = get_precision_recall_df(lmaps, ground_truth_method_id, method_folder, main_directory, average_method)
             dfs.append(df.loc[:, df.columns == 'Precision'])
 
     df_precision = pd.concat(dfs, axis=1)
     df_precision.columns = ["Base", "Rcut", "Isolation Forest"]
 
     
-    gal_presicion_heatmap = sns.heatmap(df_precision, vmin=0, vmax=1, annot=True, fmt='.3f')
-    gal_presicion_heatmap.set(ylabel='Galaxia')
+    gal_precision_heatmap = sns.heatmap(df_precision, vmin=0, vmax=1, annot=True, fmt='.3f')
+    gal_precision_heatmap.set(ylabel='Galaxia')
 
-    gal_presicion_heatmap.set_title(f'Comparación de resultados presición - {ground_truth_method_name}')
-    plt.savefig(f"{main_directory}/presicion.pdf", bbox_inches='tight')
+    gal_precision_heatmap.set_title(f'Comparación de resultados precisión - {ground_truth_method_name}')
+    plt.savefig(f"{main_directory}/precision.pdf", bbox_inches='tight')
     plt.clf()
 
 def recall_heatmap(lmaps, main_directory, average_method):
@@ -283,17 +281,17 @@ def recall_heatmap(lmaps, main_directory, average_method):
     dfs = []
     for method_folder in os.listdir(main_directory):
         if os.path.isdir(f"{main_directory}/{method_folder}"):
-            df = get_presicion_recall_df(lmaps, ground_truth_method_id, method_folder, main_directory, average_method)
+            df = get_precision_recall_df(lmaps, ground_truth_method_id, method_folder, main_directory, average_method)
             dfs.append(df.loc[:, df.columns == 'Recall'])
 
     df_precision = pd.concat(dfs, axis=1)
     df_precision.columns = ["Base", "Rcut", "Isolation Forest"]
 
     
-    gal_presicion_heatmap = sns.heatmap(df_precision, vmin=0, vmax=1, annot=True, fmt='.3f')
-    gal_presicion_heatmap.set(ylabel='Galaxia')
+    gal_precision_heatmap = sns.heatmap(df_precision, vmin=0, vmax=1, annot=True, fmt='.3f')
+    gal_precision_heatmap.set(ylabel='Galaxia')
 
-    gal_presicion_heatmap.set_title(f'Comparación de resultados recall - {ground_truth_method_name}')
+    gal_precision_heatmap.set_title(f'Comparación de resultados recall - {ground_truth_method_name}')
     plt.savefig(f"{main_directory}/recall.pdf", bbox_inches='tight')
     plt.clf()
 
@@ -372,11 +370,9 @@ if __name__ == "__main__":
 
     lmaps = get_all_methods_label_maps(results_directory)
 
-    #silhouette_heatmap(results_directory)
-    #davis_bouldin_heatmap(results_directory)
-    #presicion_heatmap(lmaps, results_directory, 'micro')
-    presicion_heatmap(lmaps, results_directory, 'weighted')
-    #recall_heatmap(lmaps, results_directory, 'micro')
+    silhouette_heatmap(results_directory)
+    davis_bouldin_heatmap(results_directory)
+    precision_heatmap(lmaps, results_directory, 'weighted')
     recall_heatmap(lmaps, results_directory, 'weighted')
 
     # 'weighted':  Calculate metrics for each label, and find their average weighted by support

@@ -60,6 +60,7 @@ def optimize_label_maps(gal_res_path, pre_mapped_ground_truth_labels, pre_mapped
 
 
 def optimize_lmaps(gal_name, results_path="results"):
+    print(f'{results_path}/{gal_name}/abadi.data')
     if os.path.exists(f'{results_path}/{gal_name}/abadi.data'):
         ground_truth_labels = read_labels_from_file(gal_name, "abadi", results_path)
     elif os.path.exists(f'{results_path}/{gal_name}/autogmm.data'):
@@ -98,8 +99,10 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=True)
+    ap.add_argument("-rd", "--results_directory", required=True, default='results')
 
     args = vars(ap.parse_args())
     gal_name = args.get("galaxyname")
+    results_path = args.get("results_directory")
 
-    optimize_lmaps(gal_name)
+    optimize_lmaps(gal_name, results_path)

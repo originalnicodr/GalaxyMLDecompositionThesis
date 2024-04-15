@@ -264,7 +264,7 @@ def remove_outliers(gal, cut_idxs):
     
     cut_gal = gchop.Galaxy(stars=stars, dark_matter=dm, gas=gas)
     
-    return cut_gal
+    return cut_gal#, cut_idxs
 
 
 def my_silhouette_score(model, X, y=None):
@@ -291,9 +291,23 @@ def get_ground_truth_method(results_path, gal_name):
         return "AutoGMM"
     raise ValueError("No ground truth labels found")
 
+def save_cluster_ownership_data(results_path, gal_name, u):
+    with open(results_path+'/'+gal_name+'/' + 'clusters_ownership.csv', 'a') as f:
+        f.write("average,mean,variance,standard deviation,min,qt1,qt2,qt3,max\n")
+        for column in u:
+            avg = np.average(column)
+            mean = np.mean(column)
+            variance = np.var(column)
+            sd = np.std(column)
+            min = np.amin(column)
+            qt1 = np.quantile(column, 0.25)
+            qt2 = np.quantile(column, 0.50)
+            qt3 = np.quantile(column, 0.75)
+            max = np.amax(column)
+            f.write(f"{avg},{mean},{variance},{sd},{min},{qt1},{qt2},{qt3},{max}\n")
 
 def analyze_galaxy_n_clusters_linkages(
-    gal_name, dataset_directory, parameters, error, maxiter, results_path="results"
+    gal_name, dataset_directory, parameters, fussiness, error, maxiter, results_path="results"
 ):
     print("Getting galaxy data")
     gal, X = get_galaxy_data(dataset_directory, results_path, gal_name)
@@ -333,7 +347,7 @@ def analyze_galaxy_n_clusters_linkages(
     # del
     # gc.colect
 
-    cntr, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=0.35, error=error, maxiter=maxiter, seed=42)
+    cntr, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=fussiness, error=error, maxiter=maxiter, seed=42)
 
     print(f"Iterations: {iterations}")
     
@@ -348,6 +362,8 @@ def analyze_galaxy_n_clusters_linkages(
 
     if not os.path.exists(results_path + "/" + gal_name + "/"):
         os.makedirs(results_path + "/" + gal_name + "/")
+
+    save_cluster_ownership_data(results_path, gal_name, u)
 
     with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
         # Esta bien usar todas las columnas para calcular el score, no?
@@ -381,8 +397,9 @@ if __name__ == "__main__":
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
     # Minimum parameters is refered to the sames used in the ground truth method we will be comparing with
     ap.add_argument("-p", "--parameters", required=False, default="minimum", help="all or minimum")
-    ap.add_argument("-e", "--error", required=False, default="0.005", help="stopping criterion")
+    ap.add_argument("-e", "--error", required=False, default="0.00005", help="stopping criterion")
     ap.add_argument("-m", "--maxiter", required=False, default="1000", help="maximum number of iterations allowed")
+    ap.add_argument("-f", "--fussiness", required=False, default="2", help="How fuzzy would the clusters be")
 
     args = vars(ap.parse_args())
 
@@ -391,14 +408,15 @@ if __name__ == "__main__":
     parameters = args.get("parameters")
     error = float(args.get("error"))
     maxiter = int(args.get("maxiter"))
+    fussiness = float(args.get("fussiness"))
 
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters, error, maxiter)
+        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters, fussiness, error, maxiter)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
             for gal_name in filenames:
                 print(f"analizing galaxy: {gal_name}")
-                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters, error, maxiter)
+                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters, fussiness, error, maxiter)

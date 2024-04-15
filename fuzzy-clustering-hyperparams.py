@@ -3,6 +3,9 @@ from __future__ import print_function
 import skfuzzy as fuzz
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import davies_bouldin_score
+import itertools
+from sklearn import metrics
+import json
 
 import numpy as np
 import pandas as pd
@@ -264,8 +267,7 @@ def remove_outliers(gal, cut_idxs):
     
     cut_gal = gchop.Galaxy(stars=stars, dark_matter=dm, gas=gas)
     
-    return cut_gal
-
+    return cut_gal#, cut_idxs
 
 def my_silhouette_score(model, X, y=None):
     preds = model.fit_predict(X)
@@ -291,6 +293,56 @@ def get_ground_truth_method(results_path, gal_name):
         return "AutoGMM"
     raise ValueError("No ground truth labels found")
 
+def save_cluster_ownership_data(results_path, gal_name, u):
+    with open(results_path+'/'+gal_name+'/' + 'clusters_ownership.csv', 'a') as f:
+        f.write("average,mean,variance,standard deviation,min,qt1,qt2,qt3,max\n")
+        for column in u:
+            avg = np.average(column)
+            mean = np.mean(column)
+            variance = np.var(column)
+            sd = np.std(column)
+            min = np.amin(column)
+            qt1 = np.quantile(column, 0.25)
+            qt2 = np.quantile(column, 0.50)
+            qt3 = np.quantile(column, 0.75)
+            max = np.amax(column)
+            f.write(f"{avg},{mean},{variance},{sd},{min},{qt1},{qt2},{qt3},{max}\n")
+
+def optimize_label_maps(gal_res_path, pre_mapped_ground_truth_labels, pre_mapped_method_labels, sub_method_key):
+    original_lmap = get_label_maps(f"{gal_res_path}/lmaps.json")
+    ground_truth_lmap = original_lmap["gchop_lmap"]
+    method_lmap = original_lmap["method_lmap"][sub_method_key] if sub_method_key else original_lmap["method_lmap"] #this is the same for all linkages
+
+    ground_truth_labels = [ground_truth_lmap[str(math.floor(l))] for l in pre_mapped_ground_truth_labels]
+
+    possible_lmaps = list(itertools.permutations(method_lmap, len(method_lmap)))
+    best_lmap = (None, 0)
+
+    for candidate_lmap_keys in possible_lmaps:
+        new_lmap = {candidate_lmap_keys[index]: method_lmap[key] for index, key in enumerate(method_lmap)}
+
+        method_labels = [new_lmap[str(l)] for l in pre_mapped_method_labels]
+
+        recall_value = metrics.recall_score(ground_truth_labels, method_labels, average='weighted')
+
+        if recall_value > best_lmap[1]:
+            best_lmap = (new_lmap, recall_value)
+
+    if sub_method_key:
+        original_lmap["method_lmap"][sub_method_key] = best_lmap[0]
+    else:
+        original_lmap["method_lmap"] = best_lmap[0]
+
+    with open(f"{gal_res_path}/lmaps.json", "w") as lmapsfile:
+        json.dump(original_lmap, lmapsfile, indent = 4)
+
+    return best_lmap[1]
+
+def read_labels_from_file(gal_name, linkage, results_path):
+    path = f'{results_path}/{gal_name}/{linkage}'
+    data = joblib.load(path+".data")
+
+    return data["labels"].to_numpy()
 
 def analyze_galaxy_n_clusters_linkages(
     gal_name, dataset_directory, parameters, results_path="results"
@@ -328,14 +380,47 @@ def analyze_galaxy_n_clusters_linkages(
 
     n_clusters = len(lmaps["method_lmap"])
 
+    # For calculating the recall value
+    if os.path.exists(f'{results_path}/{gal_name}/abadi.data'):
+        ground_truth_labels = read_labels_from_file(gal_name, "abadi", results_path)
+    elif os.path.exists(f'{results_path}/{gal_name}/autogmm.data'):
+        ground_truth_labels = read_labels_from_file(gal_name, "autogmm", results_path)
+
+    with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
+        f.write(f"Recall,m,error,maxiter,iterations\n")
+
     #clustering_model = fuzz.(n_clusters=n_clusters, linkage=linkage)
     print("Fitting the model on the galaxy")
     # del
     # gc.colect
 
-    iterations_multiplier = [2, 50, 30]#[5, 10, 15, 20, 30]#[0.1, 0.3, 0.5, 0.7, 0.9] #mejor abadi: 0.3, y 0.7, mejor autogmm: 0.75, 0.8
+    # abadi base:
+    # [1.01, 1.1, 1.2, 1.3, 1.4, 1.5]
+    # 1.4
+
+    # abadi rcut:
+    # [1.01, 1.1, 1.2, 1.3, 1.4, 1.5]
+    # 1.3
+
+    # abadi if:
+    # [1.01, 1.1, 1.2, 1.3, 1.4, 1.5]
+    # 1.3
+
+    # agmm base:
+    # [2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75]
+    # 3
+
+    # agmm rcut:
+    # [5.5, 6, 6.5, 7, 7.25, 7.5, 7.75, 8, 8.5, 9, 9.5]
+    # 6.5
+
+    # agmm if:
+    # [3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5]
+    # 4.5
+
+    iterations_multiplier = [1.01, 1.1, 1.2, 1.3, 1.4, 1.5]#[1.5, 2, 3, 5, 7.5, 10, 30, 50, 100, 250, 500, 750, 1000] #[2, 50, 30]#[5, 10, 15, 20, 30]#[0.1, 0.3, 0.5, 0.7, 0.9] #mejor abadi: 0.3, y 0.7, mejor autogmm: 0.75, 0.8
     #iterations_multiplier = [0.6, 0.65, 0.7, 0.75, 0.8]
-    errors = [0.01, 0.005] # 0.001, 0.0005
+    errors = [0.0001, 0.00005]#[0.0001, 0.00005] #[0.01, 0.005] # 0.001, 0.0005
     max_iterations = [1000, 5000]
 
     for m in iterations_multiplier:
@@ -357,16 +442,14 @@ def analyze_galaxy_n_clusters_linkages(
                 if not os.path.exists(results_path + "/" + gal_name + "/"):
                     os.makedirs(results_path + "/" + gal_name + "/")
 
+                #save_cluster_ownership_data(results_path, gal_name, u)
+
+                recall_value = optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, labels, None)
+
                 with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
-                    # Esta bien usar todas las columnas para calcular el score, no?
-                    s_score = internal_evaluation.silhouette(labels)
-                    db_score = internal_evaluation.davies_bouldin(labels)
+                    print("Recall: ", recall_value)
 
-                    print("Silhouette: ", s_score)
-                    print("Davies Bouldin: ", db_score, "\n")
-
-                    f.write(f"fuzzy,Silhouette,{s_score},m,{m},error,{error},maxiter,{maxiter},iterations,{iterations}\n")
-                    f.write(f"fuzzy,Davies Bouldin,{db_score},m,{m},error,{error},maxiter,{maxiter},iterations,{iterations}\n")
+                    f.write(f"{recall_value},{m},{error},{maxiter},{iterations}\n")
 
                     dump_results(X, labels, f'{results_path}/{gal_name}/fuzzy - m={m} error={error}, maxiter={maxiter}')
 
