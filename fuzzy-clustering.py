@@ -291,10 +291,10 @@ def get_ground_truth_method(results_path, gal_name):
         return "AutoGMM"
     raise ValueError("No ground truth labels found")
 
-def save_cluster_ownership_data(results_path, gal_name, u):
+def save_cluster_ownership_data(results_path, gal_name, u, cluster_centers):
     with open(results_path+'/'+gal_name+'/' + 'clusters_ownership.csv', 'a') as f:
-        f.write("average,mean,variance,standard deviation,min,qt1,qt2,qt3,max\n")
-        for column in u:
+        f.write("average,mean,variance,standard deviation,min,qt1,qt2,qt3,max,center.eps, center.eps_r, center.normalized_star_energy\n")
+        for column, center in zip(u, cluster_centers):
             avg = np.average(column)
             mean = np.mean(column)
             variance = np.var(column)
@@ -304,7 +304,8 @@ def save_cluster_ownership_data(results_path, gal_name, u):
             qt2 = np.quantile(column, 0.50)
             qt3 = np.quantile(column, 0.75)
             max = np.amax(column)
-            f.write(f"{avg},{mean},{variance},{sd},{min},{qt1},{qt2},{qt3},{max}\n")
+            center_string = ",".join(str(element) for element in center)
+            f.write(f"{avg},{mean},{variance},{sd},{min},{qt1},{qt2},{qt3},{max},{center_string}\n")
 
 def analyze_galaxy_n_clusters_linkages(
     gal_name, dataset_directory, parameters, fussiness, error, maxiter, results_path="results"
@@ -347,7 +348,7 @@ def analyze_galaxy_n_clusters_linkages(
     # del
     # gc.colect
 
-    cntr, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=fussiness, error=error, maxiter=maxiter, seed=42)
+    cluster_centers, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=fussiness, error=error, maxiter=maxiter, seed=42)
 
     print(f"Iterations: {iterations}")
     
@@ -363,7 +364,7 @@ def analyze_galaxy_n_clusters_linkages(
     if not os.path.exists(results_path + "/" + gal_name + "/"):
         os.makedirs(results_path + "/" + gal_name + "/")
 
-    save_cluster_ownership_data(results_path, gal_name, u)
+    save_cluster_ownership_data(results_path, gal_name, u, cluster_centers)
 
     with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
         # Esta bien usar todas las columnas para calcular el score, no?
