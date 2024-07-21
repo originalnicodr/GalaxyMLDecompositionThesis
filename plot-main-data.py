@@ -102,6 +102,15 @@ def draw_2d_graph_real_scatterplot(gal, clustering_results, clustering_method, g
         sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
         plot_with_legend = sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[1,1], legend=not multiple_sub_methods, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
         sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
+    
+    elif clustering_method == "Evidence Accumulation Clustering":
+        plt.text(-0.15, 0.3, "EAC", fontsize=14, transform=plt.gcf().transFigure)
+        
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], clustering_results["eac"], lmap=label_maps["method_lmap"])
+
+        sns.histplot(x="x", y="y", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
+        plot_with_legend = sns.histplot(x="y", y="z", hue=hue, data=df, ax=axs[1,1], legend=not multiple_sub_methods, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
+        sns.histplot(x="x", y="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, kde=True)
 
     for ax in fig.axes:
         ax.set_xlim([-20,20])
@@ -244,6 +253,21 @@ def draw_2d_graph_real_histogram(gal, clustering_results, clustering_method, gro
         plt.text(-0.15, 0.3, "FC", fontsize=14, transform=plt.gcf().transFigure)
         
         df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], clustering_results["fuzzy"], lmap=label_maps["method_lmap"])
+
+        sns.histplot(x="x", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        plot_with_legend = sns.histplot(x="y", hue=hue, data=df, ax=axs[1,1], legend=not multiple_sub_methods, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="z", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+
+        axs[1,1].set_ylabel("")
+        axs[1,2].set_ylabel("")
+        axs[1,0].set_xlabel(f"{axs[1,2].get_xlabel()} [kpc]")
+        axs[1,1].set_xlabel(f"{axs[1,2].get_xlabel()} [kpc]")
+        axs[1,2].set_xlabel(f"{axs[1,2].get_xlabel()} [kpc]")
+
+    elif clustering_method == "Evidence Accumulation Clustering":
+        plt.text(-0.15, 0.3, "EAC", fontsize=14, transform=plt.gcf().transFigure)
+        
+        df, hue = gal.plot.get_df_and_hue(None, ["x", "y", "z"], clustering_results["eac"], lmap=label_maps["method_lmap"])
 
         sns.histplot(x="x", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
         plot_with_legend = sns.histplot(x="y", hue=hue, data=df, ax=axs[1,1], legend=not multiple_sub_methods, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -409,6 +433,21 @@ def draw_2d_graph_circ_scatterplot(gal, clustering_results, clustering_method, g
         axs[1,0].set_xlim([0, 1.5])
         axs[1,1].set_ylim([0, 1.5])
 
+    elif clustering_method == "Evidence Accumulation Clustering":
+        plt.text(-0.15, 0.3, "EAC", fontsize=14, transform=plt.gcf().transFigure)
+        
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], clustering_results["eac"], lmap=label_maps["method_lmap"])
+
+        unique_labels = df[hue].unique()
+        hue_order = [c for c in hue_order if c in unique_labels ]
+
+        sns.histplot(y="eps", x="eps_r", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+        plot_with_legend = sns.histplot(y="eps_r", x="normalized_star_energy", hue=hue, data=df, ax=axs[1,1], legend=not multiple_sub_methods, palette=palette, alpha=0.7, hue_order=hue_order)
+        sns.histplot(y="eps", x="normalized_star_energy", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order)
+
+        axs[1,0].set_xlim([0, 1.5])
+        axs[1,1].set_ylim([0, 1.5])
+
     for ax in fig.axes:
         #ax.set_xticklabels([])
         #ax.set_yticklabels([])
@@ -551,6 +590,21 @@ def draw_2d_graph_circ_histogram(gal, clustering_results, clustering_method, gro
         plt.text(-0.15, 0.3, "FC", fontsize=14, transform=plt.gcf().transFigure)
 
         df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], clustering_results["fuzzy"], lmap=label_maps["method_lmap"])
+
+        sns.histplot(x="eps", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        plot_with_legend = sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[1,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+        sns.histplot(x="normalized_star_energy", hue=hue, data=df, ax=axs[1,2], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
+
+        axs[1,1].set_ylabel("", fontsize=10)
+        axs[1,2].set_ylabel("", fontsize=10)
+        axs[1,2].set_xlabel("", fontsize=10)
+
+        axs[1,1].set_xlim([0, 1.5])
+
+    elif clustering_method == "Evidence Accumulation Clustering":
+        plt.text(-0.15, 0.3, "EAC", fontsize=14, transform=plt.gcf().transFigure)
+
+        df, hue = gal.plot.get_circ_df_and_hue(gchop.preproc.DEFAULT_CBIN, ["eps", "eps_r", "normalized_star_energy"], clustering_results["eac"], lmap=label_maps["method_lmap"])
 
         sns.histplot(x="eps", hue=hue, data=df, ax=axs[1,0], legend=False, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
         plot_with_legend = sns.histplot(x="eps_r", hue=hue, data=df, ax=axs[1,1], legend=True, palette=palette, alpha=0.7, hue_order=hue_order, stat='density')
@@ -769,6 +823,12 @@ def plot_gal(gal_name, dataset_directory, real_space_only, results_path="results
         fuzzy_labels = read_labels_from_file(gal_name, "fuzzy", results_path)
         fuzzy_comp = build_comp(gal, fuzzy_labels)
         clustering_results["fuzzy"] = fuzzy_comp
+    elif os.path.exists(f'{results_path}/{gal_name}/eac.data'):
+        clustering_method = "Evidence Accumulation Clustering"
+
+        eac_labels = read_labels_from_file(gal_name, "eac", results_path)
+        eac_comp = build_comp(gal, eac_labels)
+        clustering_results["eac"] = eac_comp
     else:
         raise ValueError("No clustering labels found")
         
