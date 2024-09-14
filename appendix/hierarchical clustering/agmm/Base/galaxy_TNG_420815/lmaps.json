@@ -1,0 +1,34 @@
+{
+    "gchop_lmap": {
+        "0": "Halo",
+        "1": "Bulge",
+        "2": "Cold disk",
+        "3": "Warm disk"
+    },
+    "method_lmap": {
+        "ward": {
+            "0": "Halo",
+            "1": "Bulge",
+            "2": "Cold disk",
+            "3": "Warm disk"
+        },
+        "complete": {
+            "0": "Halo",
+            "2": "Bulge",
+            "1": "Cold disk",
+            "3": "Warm disk"
+        },
+        "average": {
+            "0": "Halo",
+            "1": "Bulge",
+            "2": "Cold disk",
+            "3": "Warm disk"
+        },
+        "single": {
+            "0": "Halo",
+            "1": "Bulge",
+            "2": "Cold disk",
+            "3": "Warm disk"
+        }
+    }
+}

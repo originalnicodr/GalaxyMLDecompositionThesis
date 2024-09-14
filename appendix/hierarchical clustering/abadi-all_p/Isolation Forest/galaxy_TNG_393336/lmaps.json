@@ -1,0 +1,12 @@
+{
+    "gchop_lmap": {
+        "0": "Spheroid",
+        "1": "Disk"
+    },
+    "method_lmap": {
+        "ward": {
+            "1": "Spheroid",
+            "0": "Disk"
+        }
+    }
+}

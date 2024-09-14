@@ -1,0 +1,10 @@
+abadi,Silhouette,0.6156966743104594
+abadi,Davies Bouldin,0.5491476083935816
+ward,Silhouette,0.4393957794089642
+ward,Davies Bouldin,0.9489076673305552
+single,Silhouette,0.8984477619229436
+single,Davies Bouldin,0.0734848677815154
+complete,Silhouette,0.5593779843779246
+complete,Davies Bouldin,0.5313870593342681
+average,Silhouette,0.5557373752620601
+average,Davies Bouldin,0.5425235848021255

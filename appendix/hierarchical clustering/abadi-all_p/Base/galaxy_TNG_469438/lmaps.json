@@ -1,0 +1,24 @@
+{
+    "gchop_lmap": {
+        "0": "Spheroid",
+        "1": "Disk"
+    },
+    "method_lmap": {
+        "ward": {
+            "1": "Spheroid",
+            "0": "Disk"
+        },
+        "complete": {
+            "1": "Spheroid",
+            "0": "Disk"
+        },
+        "average": {
+            "0": "Spheroid",
+            "1": "Disk"
+        },
+        "single": {
+            "1": "Spheroid",
+            "0": "Disk"
+        }
+    }
+}

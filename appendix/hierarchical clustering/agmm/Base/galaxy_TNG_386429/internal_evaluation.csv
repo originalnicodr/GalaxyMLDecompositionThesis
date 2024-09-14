@@ -1,0 +1,10 @@
+autogmm,Silhouette,0.38343862204111817
+autogmm,Davies Bouldin,1.313410637873497
+ward,Silhouette,0.2976124788448165
+ward,Davies Bouldin,1.153437182067603
+single,Silhouette,0.672054865350966
+single,Davies Bouldin,0.30447092188296493
+complete,Silhouette,0.4735450906916625
+complete,Davies Bouldin,0.7107285815676382
+average,Silhouette,0.6106067049328947
+average,Davies Bouldin,0.5354867432040269

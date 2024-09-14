@@ -1,0 +1,16 @@
+{
+    "gchop_lmap": {
+        "0": "Halo",
+        "1": "Bulge",
+        "2": "Cold disk",
+        "3": "Warm disk"
+    },
+    "method_lmap": {
+        "ward": {
+            "2": "Halo",
+            "0": "Bulge",
+            "3": "Cold disk",
+            "1": "Warm disk"
+        }
+    }
+}
