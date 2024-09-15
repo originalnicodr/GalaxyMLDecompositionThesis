@@ -89,6 +89,10 @@ def optimize_lmaps(gal_name, results_path="results"):
     elif os.path.exists(f'{results_path}/{gal_name}/fuzzy.data'):
         fuzzy_labels = read_labels_from_file(gal_name, "fuzzy", results_path)
         optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, fuzzy_labels, None)
+    
+    elif os.path.exists(f'{results_path}/{gal_name}/eac.data'):
+        eac_labels = read_labels_from_file(gal_name, "eac", results_path)
+        optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, eac_labels, None)
 
 if __name__ == "__main__":
     script_path = os.path.dirname( __file__ )
@@ -99,7 +103,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     # Add the arguments to the parser
     ap.add_argument("-galn", "--galaxyname", required=True)
-    ap.add_argument("-rd", "--results_directory", required=True, default='results')
+    ap.add_argument("-rd", "--results_directory", required=False, default='results')
 
     args = vars(ap.parse_args())
     gal_name = args.get("galaxyname")

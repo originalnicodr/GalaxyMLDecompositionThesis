@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-import skfuzzy as fuzz
+from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import davies_bouldin_score
 
@@ -291,24 +291,8 @@ def get_ground_truth_method(results_path, gal_name):
         return "AutoGMM"
     raise ValueError("No ground truth labels found")
 
-def save_cluster_ownership_data(results_path, gal_name, u, cluster_centers):
-    with open(results_path+'/'+gal_name+'/' + 'clusters_ownership.csv', 'a') as f:
-        f.write("average,mean,variance,standard deviation,min,qt1,qt2,qt3,max,center.eps, center.eps_r, center.normalized_star_energy\n")
-        for column, center in zip(u, cluster_centers):
-            avg = np.average(column)
-            mean = np.mean(column)
-            variance = np.var(column)
-            sd = np.std(column)
-            min = np.amin(column)
-            qt1 = np.quantile(column, 0.25)
-            qt2 = np.quantile(column, 0.50)
-            qt3 = np.quantile(column, 0.75)
-            max = np.amax(column)
-            center_string = ",".join(str(element) for element in center)
-            f.write(f"{avg},{mean},{variance},{sd},{min},{qt1},{qt2},{qt3},{max},{center_string}\n")
-
 def analyze_galaxy_n_clusters_linkages(
-    gal_name, dataset_directory, parameters, fussiness, error, maxiter, results_path="results"
+    gal_name, dataset_directory, parameters, linkage, results_path="results"
 ):
     print("Getting galaxy data")
     gal, X = get_galaxy_data(dataset_directory, results_path, gal_name)
@@ -348,11 +332,13 @@ def analyze_galaxy_n_clusters_linkages(
     # del
     # gc.colect
 
-    cluster_centers, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=fussiness, error=error, maxiter=maxiter, seed=42)
+    #estimators = [KMeans(n_clusters=100) for i in range(0,250)]
+    kmeans = KMeans(n_clusters=100).fit(X)
 
-    print(f"Iterations: {iterations}")
-    
-    labels = np.array(u.argmax(axis=0))
+    labels = kmeans.labels_
+
+    # EAC clustering starts clusters from 1 instead of 0
+    labels = labels - 1
 
     #volvemos a obtener el gal por que lo eliminamos para hacer memoria para el fit
     gal, _ = get_galaxy_data(dataset_directory, results_path, gal_name)
@@ -364,9 +350,9 @@ def analyze_galaxy_n_clusters_linkages(
     if not os.path.exists(results_path + "/" + gal_name + "/"):
         os.makedirs(results_path + "/" + gal_name + "/")
 
-    save_cluster_ownership_data(results_path, gal_name, u, cluster_centers)
-
     with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
+
+        print(np.mean(labels))
         # Esta bien usar todas las columnas para calcular el score, no?
         s_score = internal_evaluation.silhouette(labels)
         db_score = internal_evaluation.davies_bouldin(labels)
@@ -374,10 +360,10 @@ def analyze_galaxy_n_clusters_linkages(
         print("Silhouette: ", s_score)
         print("Davies Bouldin: ", db_score, "\n")
 
-        f.write(f"fuzzy,Silhouette,{s_score}\n")
-        f.write(f"fuzzy,Davies Bouldin,{db_score}\n")
+        f.write(f"kmeans,Silhouette,{s_score}\n")
+        f.write(f"kmeans,Davies Bouldin,{db_score}\n")
 
-        dump_results(X, labels, f'{results_path}/{gal_name}/fuzzy')
+        dump_results(X, labels, f'{results_path}/{gal_name}/eac')
 
     del labels
     del gal
@@ -398,26 +384,22 @@ if __name__ == "__main__":
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
     # Minimum parameters is refered to the sames used in the ground truth method we will be comparing with
     ap.add_argument("-p", "--parameters", required=False, default="minimum", help="all or minimum")
-    ap.add_argument("-e", "--error", required=False, default="0.00005", help="stopping criteria")
-    ap.add_argument("-m", "--maxiter", required=False, default="1000", help="maximum number of iterations allowed")
-    ap.add_argument("-f", "--fussiness", required=False, default="2", help="How fuzzy would the clusters be")
+    # Linkage used to determine the 
+    ap.add_argument("-l", "--linkage", required=False, default="single", help="single, complete, average, weighted, median centroid, ward")
 
     args = vars(ap.parse_args())
 
     galaxy_name = args.get("galaxyname")
-    complete_linkage = args.get("complete")
     parameters = args.get("parameters")
-    error = float(args.get("error"))
-    maxiter = int(args.get("maxiter"))
-    fussiness = float(args.get("fussiness"))
+    linkage = args.get("linkage")
 
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters, fussiness, error, maxiter)
+        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters, linkage)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
             for gal_name in filenames:
                 print(f"analizing galaxy: {gal_name}")
-                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters, fussiness, error, maxiter)
+                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters, linkage)

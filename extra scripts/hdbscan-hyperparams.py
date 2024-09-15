@@ -1,8 +1,11 @@
 from __future__ import print_function
 
-import skfuzzy as fuzz
+import hdbscan
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import davies_bouldin_score
+import itertools
+from sklearn import metrics
+import json
 
 import numpy as np
 import pandas as pd
@@ -266,7 +269,6 @@ def remove_outliers(gal, cut_idxs):
     
     return cut_gal#, cut_idxs
 
-
 def my_silhouette_score(model, X, y=None):
     preds = model.fit_predict(X)
     return silhouette_score(X, preds) if len(set(preds)) > 1 else float("nan")
@@ -291,10 +293,10 @@ def get_ground_truth_method(results_path, gal_name):
         return "AutoGMM"
     raise ValueError("No ground truth labels found")
 
-def save_cluster_ownership_data(results_path, gal_name, u, cluster_centers):
+def save_cluster_ownership_data(results_path, gal_name, u):
     with open(results_path+'/'+gal_name+'/' + 'clusters_ownership.csv', 'a') as f:
-        f.write("average,mean,variance,standard deviation,min,qt1,qt2,qt3,max,center.eps, center.eps_r, center.normalized_star_energy\n")
-        for column, center in zip(u, cluster_centers):
+        f.write("average,mean,variance,standard deviation,min,qt1,qt2,qt3,max\n")
+        for column in u:
             avg = np.average(column)
             mean = np.mean(column)
             variance = np.var(column)
@@ -304,11 +306,46 @@ def save_cluster_ownership_data(results_path, gal_name, u, cluster_centers):
             qt2 = np.quantile(column, 0.50)
             qt3 = np.quantile(column, 0.75)
             max = np.amax(column)
-            center_string = ",".join(str(element) for element in center)
-            f.write(f"{avg},{mean},{variance},{sd},{min},{qt1},{qt2},{qt3},{max},{center_string}\n")
+            f.write(f"{avg},{mean},{variance},{sd},{min},{qt1},{qt2},{qt3},{max}\n")
+
+def optimize_label_maps(gal_res_path, pre_mapped_ground_truth_labels, pre_mapped_method_labels, sub_method_key):
+    original_lmap = get_label_maps(f"{gal_res_path}/lmaps.json")
+    ground_truth_lmap = original_lmap["gchop_lmap"]
+    method_lmap = original_lmap["method_lmap"][sub_method_key] if sub_method_key else original_lmap["method_lmap"] #this is the same for all linkages
+
+    ground_truth_labels = [ground_truth_lmap[str(math.floor(l))] for l in pre_mapped_ground_truth_labels]
+
+    possible_lmaps = list(itertools.permutations(method_lmap, len(method_lmap)))
+    best_lmap = (None, 0)
+
+    for candidate_lmap_keys in possible_lmaps:
+        new_lmap = {candidate_lmap_keys[index]: method_lmap[key] for index, key in enumerate(method_lmap)}
+
+        method_labels = ["noise" if l == -1 else new_lmap[str(l)] for l in pre_mapped_method_labels]
+
+        recall_value = metrics.recall_score(ground_truth_labels, method_labels, average='weighted')
+
+        if recall_value > best_lmap[1]:
+            best_lmap = (new_lmap, recall_value)
+
+    if sub_method_key:
+        original_lmap["method_lmap"][sub_method_key] = best_lmap[0]
+    else:
+        original_lmap["method_lmap"] = best_lmap[0]
+
+    with open(f"{gal_res_path}/lmaps.json", "w") as lmapsfile:
+        json.dump(original_lmap, lmapsfile, indent = 4)
+
+    return best_lmap[1]
+
+def read_labels_from_file(gal_name, linkage, results_path):
+    path = f'{results_path}/{gal_name}/{linkage}'
+    data = joblib.load(path+".data")
+
+    return data["labels"].to_numpy()
 
 def analyze_galaxy_n_clusters_linkages(
-    gal_name, dataset_directory, parameters, fussiness, error, maxiter, results_path="results"
+    gal_name, dataset_directory, parameters, results_path="results"
 ):
     print("Getting galaxy data")
     gal, X = get_galaxy_data(dataset_directory, results_path, gal_name)
@@ -343,47 +380,59 @@ def analyze_galaxy_n_clusters_linkages(
 
     n_clusters = len(lmaps["method_lmap"])
 
-    #clustering_model = fuzz.(n_clusters=n_clusters, linkage=linkage)
-    print("Fitting the model on the galaxy")
-    # del
-    # gc.colect
-
-    cluster_centers, u, _, _, _, iterations, fpc = fuzz.cluster.cmeans(X.T, c=n_clusters, m=fussiness, error=error, maxiter=maxiter, seed=42)
-
-    print(f"Iterations: {iterations}")
-    
-    labels = np.array(u.argmax(axis=0))
-
-    #volvemos a obtener el gal por que lo eliminamos para hacer memoria para el fit
-    gal, _ = get_galaxy_data(dataset_directory, results_path, gal_name)
-
-
-    comp = build_comp(gal, labels)
-    internal_evaluation = Internal(comp)
-
-    if not os.path.exists(results_path + "/" + gal_name + "/"):
-        os.makedirs(results_path + "/" + gal_name + "/")
-
-    save_cluster_ownership_data(results_path, gal_name, u, cluster_centers)
+    # For calculating the recall value
+    if os.path.exists(f'{results_path}/{gal_name}/abadi.data'):
+        ground_truth_labels = read_labels_from_file(gal_name, "abadi", results_path)
+    elif os.path.exists(f'{results_path}/{gal_name}/autogmm.data'):
+        ground_truth_labels = read_labels_from_file(gal_name, "autogmm", results_path)
 
     with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
-        # Esta bien usar todas las columnas para calcular el score, no?
-        s_score = internal_evaluation.silhouette(labels)
-        db_score = internal_evaluation.davies_bouldin(labels)
+        f.write(f"Recall,m,error,maxiter,iterations\n")
 
-        print("Silhouette: ", s_score)
-        print("Davies Bouldin: ", db_score, "\n")
+    print("Fitting the model on the galaxy")
 
-        f.write(f"fuzzy,Silhouette,{s_score}\n")
-        f.write(f"fuzzy,Davies Bouldin,{db_score}\n")
+    max_epsilons = [0.075]
+    min_core_points = [10, 100, 200, 500, 1000]
+    
+    for mpts in min_core_points:
+        for e in max_epsilons:
+            print(f"Current clustering: mpts={mpts}")
+            clusterer = hdbscan.HDBSCAN(min_cluster_size=mpts, min_samples=mpts, cluster_selection_epsilon=e)
+            labels = clusterer.fit_predict(X)
 
-        dump_results(X, labels, f'{results_path}/{gal_name}/fuzzy')
+            ax = clusterer.condensed_tree_.plot()
+            #ax.set_ylim([100,1000])
+            fig = ax.get_figure()
+            fig.savefig(f"{results_path}/{gal_name}/ - condenced tree - mpts={mpts} - e={e}.png", bbox_inches='tight', dpi=300)
+            
 
-    del labels
-    del gal
-    del comp
-    del internal_evaluation
-    gc.collect()
+            print(np.unique(labels))
+
+            #volvemos a obtener el gal por que lo eliminamos para hacer memoria para el fit
+            gal, _ = get_galaxy_data(dataset_directory, results_path, gal_name)
+
+            comp = build_comp(gal, labels)
+            internal_evaluation = Internal(comp)
+
+            if not os.path.exists(results_path + "/" + gal_name + "/"):
+                os.makedirs(results_path + "/" + gal_name + "/")
+
+            #save_cluster_ownership_data(results_path, gal_name, u)
+
+            recall_value = optimize_label_maps(f'{results_path}/{gal_name}', ground_truth_labels, labels, None)
+
+            with open(results_path+'/'+gal_name+'/' + 'internal_evaluation.csv', 'a') as f:
+                print("Recall: ", recall_value)
+
+                f.write(f"{recall_value},{mpts}\n")
+
+                dump_results(X, labels, f'{results_path}/{gal_name}/hdbscan - mpts={mpts}')
+
+            del labels
+            del gal
+            del comp
+            del internal_evaluation
+            gc.collect()
 
 if __name__ == "__main__":
     script_path = os.path.dirname( __file__ )
@@ -398,26 +447,20 @@ if __name__ == "__main__":
     ap.add_argument("-galn", "--galaxyname", required=False, help="Include the extension as well!")
     # Minimum parameters is refered to the sames used in the ground truth method we will be comparing with
     ap.add_argument("-p", "--parameters", required=False, default="minimum", help="all or minimum")
-    ap.add_argument("-e", "--error", required=False, default="0.00005", help="stopping criteria")
-    ap.add_argument("-m", "--maxiter", required=False, default="1000", help="maximum number of iterations allowed")
-    ap.add_argument("-f", "--fussiness", required=False, default="2", help="How fuzzy would the clusters be")
 
     args = vars(ap.parse_args())
 
     galaxy_name = args.get("galaxyname")
     complete_linkage = args.get("complete")
     parameters = args.get("parameters")
-    error = float(args.get("error"))
-    maxiter = int(args.get("maxiter"))
-    fussiness = float(args.get("fussiness"))
 
     if galaxy_name:
         print(f"analizing galaxy: {galaxy_name}")
-        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters, fussiness, error, maxiter)
+        analyze_galaxy_n_clusters_linkages(galaxy_name, directory_name, parameters)
     else:
         for dirpath, _, filenames in os.walk(directory_name):
             print(filenames)
             filenames = [fi for fi in filenames if fi.endswith(".h5")]
             for gal_name in filenames:
                 print(f"analizing galaxy: {gal_name}")
-                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters, fussiness, error, maxiter)
+                analyze_galaxy_n_clusters_linkages(gal_name, directory_name, parameters)

@@ -2,7 +2,7 @@
 
 #debug
 python ground-truth.py -galn galaxy_TNG_611399 -cm ab -orm rc
-python jerarquical-clustering.py -galn galaxy_TNG_611399
+python hierarchical-clustering.py -galn galaxy_TNG_611399
 python plot-main-data.py -galn galaxy_TNG_611399 -rso
 
 python ground-truth.py -galn galaxy_TNG_490577 -cm ab -orm rc
@@ -15,15 +15,15 @@ python ground-truth.py -galn galaxy_TNG_389511 -cm ab -orm rc
 python ground-truth.py -galn galaxy_TNG_393336 -cm ab -orm rc
 python ground-truth.py -galn galaxy_TNG_405000 -cm ab -orm rc
 
-python jerarquical-clustering.py -galn galaxy_TNG_490577 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_469438 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_468064 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_420815 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_386429 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_375401 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_389511 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_393336 -p a
-python jerarquical-clustering.py -galn galaxy_TNG_405000 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_490577 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_469438 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_468064 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_420815 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_386429 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_375401 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_389511 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_393336 -p a
+python hierarchical-clustering.py -galn galaxy_TNG_405000 -p a
 
 python plot-main-data.py -galn galaxy_TNG_490577 -rso
 python plot-main-data.py -galn galaxy_TNG_469438 -rso
