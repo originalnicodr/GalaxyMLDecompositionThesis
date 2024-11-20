@@ -1,0 +1,101 @@
+\section{Conclusiones}
+
+
+\begin{frame}
+\frametitle{Conclusiones}
+
+\begin{enumerate}
+    \item<2-> Resultados de Clustering Jerárquico son cercanos a los de Abadi (entendiendo las limitaciones de usar una sola feature). Pero el alto costo computacional y de memoria en comparacion indican que no es una buena alternativa.
+    \item<3-> Clustering Jerárquico obteniendo resultados similares a los de Abadi lo reconfirma, como asi tambien con AGMM.
+    \item<4-> Dada que la naturaleza de ciertas subcomponentes alejados a los conceptos usuales de clusterización, los métodos presentados que no asignan una interpretación física a los valores no harán un buen trabajo sobre estas con las features trabajadas.
+\end{enumerate}
+
+\note{
+\begin{enumerate}
+\item<2-> Cabe aclarar que, cuando hablamos de estos algoritmos como posibles \textbf{alternativas} a las ya propuestas en el área, hablamos estrictamente respecto a la tarea de \textbf{encontrar clusters de forma similares}. Es decir, dado que los algoritmos usados en este trabajo son de uso general en minería de datos no es posible para ellos \textbf{etiquetar} cada cluster con la etiqueta correspondiente. \textbf{Responsabilidad} que queda a cargo de quien corre dichos métodos. \\
+\item<3-> La \textbf{tendencia} de \gls{HC} a obtener resultados similares a los de Abadi es un \textbf{indicativo extra} del éxito de este último como algoritmo para identificar componentes. \\
+\item<4-> El Bulge y el Halo
+\end{enumerate}
+}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Conclusiones}
+
+\begin{enumerate}
+    \setcounter{enumi}{3}
+    \item<1-> Fuzzy Clustering también presenta tendencias similares a Abadi, y entendiendo sus limitaciones podría considerarse como una buena alternativa. Pero su comportamiento dista de ser el buscado con mas de 2 clusters para ser considerado una alternativa a AGMM.
+    \item<2-> Los resultados obtenidos por Evidence Accumulation Clustering estan lejos de ser similares a los provenientes de Abadi y AGMM. Además, su costo computacional y de memoria son varios ordenes de magnitud mas grandes.
+    \item<3-> Las métricas internas utilizadas, Davies–Bouldin y Silhouette, no son de utilidad para analizar el desempeño de algoritmos de clustering en el problema presentado, dada la naturaleza de las componentes reales de una galaxia y como estas difieren de, lo que entienden estas métricas, son buenos clusters.
+\end{enumerate}
+
+\note{
+\begin{enumerate}
+\item<1-> Desincentivando de esta manera cualquier aplicación de este método en la practica. Al menos con la \textbf{implementación utilizada}. \\
+\item<3-> Además, \textbf{no fue posible concluir} con ninguno de los métodos explorados si el \textbf{remover outliers} beneficia o no la tarea de buscar los clusters deseados. Dificultando, además, el análisis al buscar un numero variables de clusters dada la variabilidad de la cardinalidad de estos ocasionada por remover partículas estelares de los datos.
+\end{enumerate}
+}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Trabajo a futuro}
+
+\begin{enumerate}
+    \item<1-> Extender el dataset propuesto para realizar experimentos con galaxias espirales.
+    \item<2-> Normalización del espacio dinámico antes de correr los metodos vistos.
+    \item<3-> Explorar otro tipo de preprocesamientos sobre el espacio dinámico antes de aplicar los métodos propuestos.
+    \item<4-> Aplicar diferentes variaciones sobre el primer paso del algoritmo de Evidence Accumulation Clustering.
+    \item<5-> Correr Evidence Accumulation Clustering variando los valores de $k$ de cada k-means, buscando la cota inferior y superior de dicha variación como hyperparametros.
+    \item<6-> Aplicar otras técnicas de eliminación de outliers.
+    \item<7-> Explorar otras features del dataset que podrían contener mas información útil.
+    % 
+\end{enumerate}
+
+\note{
+\begin{enumerate}
+\item<2-> (2) En especial \gls{HC} y \gls{FCM}  \\
+\item<6-> (6) Sean del area de data mining o algunas mas complejas del area de la astronomia \\
+\item<7-> (7) Para encontrar componentes con los métodos propuestos, como la \textbf{edad} o la \textbf{metalicidad}.
+\end{enumerate}
+}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Contacto}
+
+\begin{center}
+Scripts: \href{https://github.com/originalnicodr/GalaxyMLDecompositionThesis}{\textbf{github.com/originalnicodr/GalaxyMLDecompositionThesis}}
+
+    \vspace{3mm}
+    \includegraphics<1>[width=10cm]{conclusiones/figures/blank.png}
+    \transfade<1-2>
+    \includegraphics<2>[width=10cm]{conclusiones/figures/gracias totales.png}
+    \vspace{3mm}
+
+\begin{table}[]
+\centering
+\begin{tabular}{ll}
+\faicon{github} \href{https://github.com/originalnicodr}{github.com/originalnicodr} & \faicon{twitter} \href{https://twitter.com/originalnicodr}{twitter.com/originalnicodr}\\
+\faicon{linkedin} \href{https://linkedin.com/in/nicolas-uriel-navall}{linkedin.com/in/nicolas-uriel-navall} & \faicon{envelope} \href{mailto:niconavall@gmail.com}{niconavall@gmail.com}\\
+\multicolumn{2}{l}{
+        \faicon{globe} \href{https://originalnicodr.github.io/}{originalnicodr.github.io}
+}
+\end{tabular}
+\end{table}
+
+\end{center}
+
+
+\end{frame}

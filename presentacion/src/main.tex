@@ -1,0 +1,82 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{fontawesome}
+
+\usetheme{Madrid}
+\usecolortheme{default}
+
+%\setbeameroption{hide notes} % Only slides
+%\setbeameroption{show only notes} % Only notes
+\setbeameroption{show notes on second screen=right} % Both
+
+\newif\iflong
+\longfalse
+
+
+%------------------------------------------------------------
+
+
+%End of title page configuration block
+%------------------------------------------------------------
+\title[ ] %optional
+{Métodos alternativos de clustering para la descomposición dinámica de galaxias en simulaciones astrofísicas}
+
+
+\author[N. Navall]{
+Nicolás Uriel Navall\inst{1}\\
+\and
+Dr. Juan Cabral\inst{2}\\ \and Dr. Pablo Granitto\inst{1}\\ \and Lic. Valeria Cristiani\inst{2}
+}
+
+
+\institute[UNR] % (optional)
+{
+  \inst{1} Universidad Nacional de Rosario\\
+  Facultad de Ciencias Exactas, Ingeniería y Agrimensura
+
+  \inst{2} Universidad Nacional de Córdoba \\
+  Facultad de Matemática, Astronomía, Física y Computación
+}
+
+\date[Nov 2024] % (optional)
+{Noviembre 2024}
+
+
+%------------------------------------------------------------
+%The next block of commands puts the table of contents at the 
+%beginning of each section and highlights the current section:
+
+%\AtBeginSection[]
+%{
+%  \begin{frame}
+%    \frametitle{Table of Contents}
+%    \tableofcontents[currentsection]
+%  \end{frame}
+%}
+%------------------------------------------------------------
+
+
+\begin{document}
+
+%The next statement creates the title page.
+\frame{\titlepage}
+
+
+%---------------------------------------------------------
+%This block of code is for the table of contents after
+%the title page
+%\begin{frame}
+%\frametitle{Tabla de Contenido}
+%\tableofcontents
+%\end{frame}
+%---------------------------------------------------------
+
+\input{introduccion/introduccion}
+\input{antecedentes/antecedentes}
+\input{clustering jerarquico/clustering jerarquico}
+\input{fuzzy clustering/fuzzy clustering}
+\input{evidence accumulation clustering/evidence accumulation clustering}
+
+\input{conclusiones/conclusiones}
+
+\end{document}

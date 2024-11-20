@@ -1,0 +1,68 @@
+\chapter{Introducción}
+\label{chapter:intro}
+
+Hoy en día disponemos de una enorme cantidad de datos, cuya calidad y cantidad sigue creciendo constantemente. Es por esto que la minería de datos y el aprendizaje automatizado son más relevantes que nunca. El volumen de dicha información es tal que no tiene sentido que su extracción y análisis sea una tarea netamente humana \citep{hey2009fourth}. El campo de la astronomía no se ve ajena a esto, y de entre todos los tipos de datos relevantes para la disciplina, se encuentran los asociados a las galaxias y simulaciones cosmológicas.
+
+El proceso de formación y evolución de galaxias es extremadamente complejo \citep{white1978core, white1991galaxy, mo1998formation}, por lo cual las simulaciones numéricas son una herramienta fundamental para estudiar la formación de estos objetos, sus componentes estelares, y los halos de materia oscura donde se forman. Mientras que la evolución dinámica de la materia oscura es calculada en detalle a través de la interacción gravitacional de N-cuerpos, la interacción de los bariones (estrellas y gas) se calcula a través de las interacciones hidrodinámicas que tienen en cuenta gradientes de presión, enfriamiento radiativo, formación estelar, procesos de realimentación, enriquecimiento químico, etc.  
+
+En este sentido, entre las simulaciones hidrodinámicas cosmológicas de vanguardia existentes están las simulaciones EAGLE \citep{schaye2015eagle}, y \gls{TNG} \citealp{pillepich2018simulating}. Estas simulaciones representan el estado del arte en cuanto a combinar una alta resolución numérica con volúmenes computacionales cosmológicos suficientemente grandes para que incluyan decenas de miles de galaxias individuales. Típicamente cada una de estas galaxias está representada por decenas de miles de partículas que representan un elemento de masa del orden de $\sim 10^5$ masas solares. Como curiosidad agregamos en la Fig~\ref{fig:tng} una imagen del final (tiempo actual) de una simulación de \gls{TNG} para demostrar el realismo que logra este proyecto.
+
+\begin{figure}
+\centering
+\includegraphics[width=.9\textwidth]{introduccion/figs/tng.png}
+\caption{\label{fig:tng} Conjunto de la luz intra cúmulo extendida (ICL) de los 8 cúmulos galácticos  más masivos en TNG300-1 en tiempo actual.}
+\end{figure}
+
+Estas galaxias son sistemas estelares complejos formados por varias componentes estelares que coexisten simultáneamente y que definen su morfología y cinemática. Las más prominentes son el núcleo, disco fino y grueso, halo estelar, barra y brazos espirales. Para estudiar la formación y evolución de las galaxias es indispensable entender el proceso de formación y evolución de cada una de estas componentes. 
+
+En este sentido es fundamental contar con un método de descomposición dinámica que permita asignar cada partícula a una componente estelar dada. Un ejemplo de un método de asignación fue implementado por \citet{cristiani2020descomposicion} como una mejora del método original desarrollado por \citet{abadi2003simulations}.
+
+Esta situación provee la base y motivación para el desarrollo del presente trabajo ya que existen formas computacionales basadas en \gls{DM} y \gls{ML} para la asignación de observaciones (partículas) a grupos (componentes) de manera automática.
+
+\section{Alcances y Objetivos}
+
+El objetivo principal es avanzar en la comprensión de las galaxias simuladas por \gls{TNG} desde el punto de vista de sus subestructuras o componentes, utilizando un enfoque multidisciplinario que combine técnicas de \gls{ML} y astronomía. 
+
+Dado que las partículas de las galaxias simuladas no están etiquetadas como pertenecientes a una componente dada, para agruparlas se debe recurrir a técnicas de clustering del aprendizaje no-supervisado.
+
+Esta ausencia de etiquetas extiende el problema a que no es posible de manera directa determinar la calidad de una descomposición, por lo que las técnicas de validación interna nos van a permitir cuantificar los resultados respecto a la estructura interna de las componentes identificadas, sin necesidad de información ajena al conjunto de datos. 
+
+Igualmente, podemos evaluar las componentes encontradas, utilizando métricas clásicas de aprendizaje supervisado, comparando los resultados con los obtenidos por métodos de descomposición existentes que están bien probados en la comunidad y poseen un sólido fundamento físico \citep{abadi2003simulations, du2019identifying} que nos sirven de \gls{GT} para evaluar los métodos que implementemos. Finalmente es factible aprovechar análisis físicos del área de dinámica galáctica para una evaluación más rigurosa de los resultados obtenidos dentro del dominio particular del problema.
+
+Como último detalle, no pretendemos estudiar cómo se comportan los métodos en ambientes que han sido limpiados de valores atípicos, ya sea por técnicas utilizados en la ciencia de datos, o con métodos utilizados dentro del área de la astronomía.
+
+\subsection{Aplicaciones}
+
+El trabajo desarrollado posee diversas aplicaciones en el campo de la astronomía y el aprendizaje automático. Entre ellos, pueden mencionarse:
+
+\begin{description}
+\item[Avance en la comprensión de galaxias:]
+Dado que con el trabajo planteado se logra profundizar la comprensión de las galaxias simuladas por \gls{TNG} al combinar \gls{ML} y astronomía. 
+
+\item[Evaluación de nuevos métodos de clustering:]
+En el misma línea, el aplicar técnicas de clustering no utilizadas en el área de formación y evolución de galaxias permitirá a los astrónomos reducir incertidumbres sobre las características físicas que resalten diferentes estrategias de clustering.
+
+\item[Metodología de evaluación de resultados:]
+Un subproducto interesante de este trabajo es que aporta una metodología de evaluación de los métodos de descomposición dinámica de galaxias, pudiendo utilizarse en trabajos futuros del área.
+
+\end{description}
+
+
+\section{Resultados Originales Presentados}
+
+Las contribuciones más preponderantes se centran principalmente alrededor de la evaluación de tres métodos de clustering pertenecientes a familias que nunca fueron utilizados en el área de formación y evolución de galaxias:
+
+\begin{itemize}
+    \item Evaluación de métodos de \gls{HC} teniendo en cuenta que la estructura de las componentes galácticas están jerárquicamente organizadas.
+    \item Evaluación de métodos de \gls{FCM}, teniendo en cuenta que las partículas al ser de varias masas solares pueden pertenecer a más de una componente al mismo tiempo.
+    \item Evaluación de métodos de \gls{EAC}, para intentar capturar la compleja estructura física de las componentes que diferentes métodos de clustering pueden llegar a encontrar individualmente.
+\end{itemize}
+
+
+\section{Organización de la tesis}
+
+Los capítulos de este trabajo se organizan de la siguiente manera: en el Capítulo~\ref{chapter:antecedentes} se describe el estado del arte en técnicas de \gls{ML} en el área de descomposición dinámica así como las técnicas de clustering y evaluación que utilizamos a lo largo de todo el trabajo. 
+
+El Capítulo~\ref{chapter:jerarquico} aborda los experimentos realizados con métodos de clustering jerárquicos en dos y más componentes y evaluando la presencia o no de atípicos.
+
+Los Capítulos~\ref{chapter:fuzzy} y \ref{chapter:eac} hacen lo propio utilizando métodos difusos y basados en densidad respectivamente. Finalmente el Capítulo~\ref{chapter:conclusiones} explica las conclusiones y los trabajos a futuro.

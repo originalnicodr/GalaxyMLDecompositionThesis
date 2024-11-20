@@ -1,0 +1,32 @@
+\chapter{Conclusiones}
+\label{chapter:conclusiones}
+
+Para la realización de este trabajo se llevó a cabo un estudio sobre la composición estelar de galaxias y su descomposición dinámica, haciendo uso de los métodos de aprendizaje automático \gls{HC}, \gls{FCM} y \gls{EAC}, en conjunto con las técnicas de eliminación de outliers \gls{RCUT} e \gls{IF}. Se utilizaron los resultados obtenidos para comparar con los generados por métodos existentes y ya probados en el área como Abadi y \gls{AGMM}, utilizando métricas externas e internas para evaluar el éxito de los experimentos.
+
+Como resumen de las conclusiones extraídas en cada capítulo podemos destacar:
+
+\begin{enumerate}
+\item Se pueden obtener resultados cercanos a los obtenidos con Abadi utilizando \gls{HC}, siempre y cuando se entienda de las limitaciones provenientes de utilizar una sola feature para aplicar métodos de clusterización como el mencionado. Aun así, dado el alto costo computacional y de memoria de éste en comparación con Abadi, no se lo puede recomendar como alternativa.
+\item La tendencia de \gls{HC} a obtener resultados cercanos a los de Abadi es un indicativo extra del éxito de este último como algoritmo para identificar componentes.
+\item Dada la naturaleza de ciertas subcomponentes como el Bulge y el Halo que van en contra de los conceptos usuales de clusterización, no es posible para métodos de clustering que no asignan un significado físico a las features del espacio dinámico lograr identificar las subcomponentes mencionadas correctamente.
+\item Las métricas internas utilizadas, Davies–Bouldin y Silhouette, no son de utilidad para analizar el desempeño de algoritmos de clustering en el problema presentado, dada la naturaleza de las componentes reales de una galaxia y como estas difieren de, lo que entienden estas métricas, son buenos clusters.
+\item Al igual que con Abadi, \gls{HC} reconfirma ciertas tendencias reflejadas por los resultados obtenidos por \gls{AGMM}.
+\item \gls{FCM} también presenta tendencias similares a los resultados obtenidos con Abadi, lo cual lo hace una alternativa válida (siempre y cuando se entiendan sus limitaciones). Sin embargo, el método no muestra un comportamiento aceptable al buscar más de dos clusters para ser considerado una alternativa a \gls{AGMM}.
+\item Los resultados obtenidos por \gls{EAC} distan tanto de los buscados que no es posible recomendar la aplicación de dicho método de la forma explorada en este trabajo. Además, el tamaño de los datos usualmente manejados en el área es tan alto que el costo computacional y de memoria de \gls{EAC} es varias órdenes de magnitud mayor que los vistos en Abadi o \gls{AGMM}, desincentivando de esta manera cualquier aplicación de este método en la práctica, al menos con la implementación utilizada.
+\end{enumerate}
+
+Cabe aclarar que, cuando hablamos de estos algoritmos como posibles alternativas a las ya propuestas en el área, hablamos estrictamente respecto a la tarea de encontrar clusters de forma similares. Dado que los métodos usados en este trabajo son de uso general en minería de datos, no es posible para ellos etiquetar cada cluster con la etiqueta correspondiente, tarea que queda a cargo de quien aplica dichos métodos.
+
+Además, no fue posible concluir con ninguno de los métodos explorados si remover outliers beneficia o no la tarea de buscar los clusters deseados. Remover outliers dificulta además el análisis al buscar un número variable de clusters, dado que remover partículas estelares de los datos cambia en muchos casos la cardinalidad de la partición.
+
+Para finalizar, dado el alcance propuesto por la tesina y el costo en tiempo y memoria de los métodos utilizados, se sugieren los siguientes trabajos a futuro:
+
+\begin{enumerate}
+\item Extender el dataset propuesto para realizar experimentos con galaxias espirales.
+\item Normalización del espacio dinámico antes de correr \gls{FCM}, como así también antes de correr \gls{HC}. 
+\item Explorar otro tipo de preprocesamientos sobre el espacio dinámico antes de aplicar los métodos propuestos.
+\item Aplicar diferentes variaciones sobre el primer paso del algoritmo de \gls{EAC}, como se explica al comienzo del Capítulo~\ref{chapter:eac}.
+\item Correr \gls{EAC} variando los valores de $k$ de cada k-means, buscando además la cota inferior y superior de dicha variación como hiperparametros.
+\item Evaluar otras técnicas de eliminación de outliers provenientes de minería de datos.
+\item Explorar otras features del dataset que podrían contener más información útil para encontrar componentes con los métodos propuestos. Como la edad o la metalicidad.
+\end{enumerate}

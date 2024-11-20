@@ -1,0 +1,292 @@
+%\documentclass[spanish,a4paper,11pt,oneside,links]{report}
+\documentclass[spanish,a4paper,oneside,10pt,openright]{book}
+\usepackage{graphicx}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish, es-tabla]{babel}
+\usepackage[Algoritmo]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{url}
+\usepackage{fancyhdr}
+\usepackage{epstopdf}
+\usepackage{minted}
+\usepackage{csquotes}
+\usepackage{rotating}
+\usepackage{zref-xr}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage[authoryear,round,longnamesfirst]{natbib}
+\usepackage{multicol}
+\usepackage{spverbatim}
+\usepackage[pdf]{graphviz}
+\usepackage{dirtree}
+\usepackage{tabularx}
+    \newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\usepackage{emptypage}
+\usepackage[acronym,shortcuts,xindy]{glossaries}
+\usepackage{markdown}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{changepage}
+\usepackage{tcolorbox}
+
+% wide page for side by side figures, tables, etc
+\newlength{\offsetpage}
+\setlength{\offsetpage}{1.0cm}
+\newenvironment{widepage}{\begin{adjustwidth}{-\offsetpage}{-\offsetpage}%
+    \addtolength{\textwidth}{2\offsetpage}}%
+{\end{adjustwidth}}
+
+\newtheorem{definition}{Definición}
+
+\renewcommand{\listalgorithmname}{Índice de Algoritmos}
+
+
+\newenvironment{dedication}
+    {\vspace{6ex}\begin{quotation}\begin{center}\begin{em}}
+    {\par\end{em}\end{center}\end{quotation}}
+
+
+\DeclareMathOperator*{\argmax}{arg\,max}  % in your preamble
+\DeclareMathOperator*{\argmin}{arg\,min}  % in your preamble
+
+\makeglossaries
+
+\input{acronimos}
+
+\lhead[]{\rightmark}
+\chead[]{}
+\rhead[\leftmark]{}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\fancypagestyle{plain}{
+\fancyhead[L]{}
+\fancyhead[C]{}
+\fancyhead[R]{}
+\renewcommand{\headrulewidth}{0pt}
+}
+
+\pagestyle{fancy}
+
+\widowpenalty 10000
+\clubpenalty 10000
+
+\newcommand{\citeme}[1]{{\color{red}{¡¡CITEME: #1!!}}}
+\newcommand{\completar}[1]{{\color{red!75}{Completar: #1}}}
+\newcommand{\note}[1]{
+    \begin{tcolorbox}[ colback=red!30]
+    \texttt{Nico:
+        #1 \\
+        \begin{flushright}-- Juan y Vale\end{flushright}
+    }
+    \end{tcolorbox}
+}
+
+\begin{document}
+\setcounter{secnumdepth}{3}
+
+\input{./tapa/tapa.tex} \cleardoublepage
+
+
+\pagenumbering{gobble}
+\cleardoublepage
+
+
+
+
+
+
+%-------------------------
+% Quote
+\begin{dedication}
+\thispagestyle{empty}
+\null\vfill
+
+\begin{centering}
+\parbox{10.5cm}{%
+  \raggedright{\LARGE\itshape%
+   El paso más importante que puede dar alguien. No es el primero, ¿verdad? \\ \vspace{0.35cm}
+   Es el próximo. Siempre el próximo paso.\par\bigskip
+  }   
+  \raggedleft\large\MakeUppercase{Brandon Sanderson}\par%
+}
+\end{centering}
+
+\hfill
+
+\vfill
+\end{dedication}
+
+%-------------------------
+
+\chapter*{Reconocimientos}
+\pagenumbering{Roman} % para comenzar la numeracion de paginas en numeros romanos
+\addcontentsline{toc}{chapter}{Reconocimientos} % si queremos que aparezca en el índice
+\markboth{RECONOCIMIENTOS}{RECONOCIMIENTOS} % encabezado
+Este trabajo utilizó recursos computacionales del \href{https://ccad.unc.edu.ar/}{CCAD de la Universidad Nacional de Córdoba}, que forman parte del SNCAD del MinCyT de la República Argentina.
+
+Además, también se dio uso de recursos computacionales del \href{https://iate.oac.uncor.edu/}{Instituto de Astronomía Teórica y Experimental}, que forma parte del CONICET. Como así también del \href{https://cenits.es/}{Centro Extremeño de Investigación, Innovación Tecnológica y Supercomputación}, que forman parte de la Fundación Computación y Tecnologías Avanzadas de Extremadura de la Red Española de Supercomputación.
+
+
+%\phantom{p. 1}
+%\clearpage
+%\thispagestyle{empty}
+%\phantom{p. 2}
+%\clearpage
+
+\chapter*{Agradecimientos} % si no queremos que añada la palabra "Capitulo"
+%\pagenumbering{Roman} % para comenzar la numeracion de paginas en numeros romanos
+\addcontentsline{toc}{chapter}{Agradecimientos} % si queremos que aparezca en el índice
+\markboth{AGRADECIMIENTOS}{AGRADECIMIENTOS} % encabezado
+\input{./agradecimientos/agradecimientos.tex}
+
+
+%\phantom{p. 1}
+%\clearpage
+%\thispagestyle{empty}
+%\phantom{p. 2}
+%\clearpage
+
+\chapter*{Resumen} % si no queremos que añada la palabra "Capitulo"
+\addcontentsline{toc}{chapter}{Resumen} % si queremos que aparezca en el índice
+\markboth{RESUMEN}{RESUMEN} % encabezado
+\input{./resumen/resumen_es.tex}
+
+
+
+%\phantom{p. 1}
+%\clearpage
+%\thispagestyle{empty}
+
+\chapter*{Abstract} % si no queremos que añada la palabra "Capitulo"
+\addcontentsline{toc}{chapter}{Abstract} % si queremos que aparezca en el índice
+%\markboth{ABSTRACT}{ABSTRACT} % encabezado
+\input{./resumen/resumen_en.tex}
+
+
+\phantom{p. 1}
+\thispagestyle{empty}
+
+%-----------------------------
+
+% \clearpage
+\tableofcontents % indice de contenidos
+\pagenumbering{arabic}
+
+% ------------------------------------------
+
+
+\input{./introduccion/introduccion.tex} \cleardoublepage
+\input{./antecedentes/antecedentes.tex} \cleardoublepage
+\input{./clustering jerarquico/clustering_jerarquico.tex} \cleardoublepage
+\input{./fuzzy clustering/fuzzy_clustering.tex} \cleardoublepage
+\input{./evidence accumulation clustering/evidence_accumulation_clustering.tex} \cleardoublepage
+\input{./conclusiones/conclusiones.tex} \cleardoublepage
+
+
+
+%----------------------------------------------------
+%Apendice
+
+\appendix
+
+\input{./apendice/apendice.tex}
+
+%\thispagestyle{empty}
+%\phantom{p. 2}
+%\clearpage
+\cleardoublepage
+\phantomsection
+
+% \input{./clustering jerarquico/graficas_base.tex}
+
+% \input{./clustering jerarquico/graficas_rcut.tex}
+
+% \input{./clustering jerarquico/graficas_isolation_forest.tex}
+
+%-----------------------------
+
+% \input{./ml/ml.tex} \cleardoublepage
+
+% \input{./vvv_feats/vvv_feats.tex} \cleardoublepage
+
+% \input{./hssw/hssw.tex} \cleardoublepage
+
+% \input{./cat_gen/cat_gen.tex} \cleardoublepage
+
+% \input{./denoise/denoise.tex} \cleardoublepage
+
+% \input{./conclu/conclu.tex} \cleardoublepage
+
+% ------------------------------------------
+
+\renewcommand*\glspostdescription{\dotfill}
+\setlength{\glslistdottedwidth}{1\textwidth}
+\setlength{\glsdescwidth}{0.89\textwidth}
+\markboth{Glosario}{Glosario} % encabezado
+\addcontentsline{toc}{chapter}{Glosario}
+%\glsaddall
+\printglossary[type=\acronymtype,title=Glosario]
+%\printglossary
+
+
+%\phantom{p. 1}
+%\clearpage
+\cleardoublepage
+\phantomsection
+
+%\phantom{p. 1}
+%\clearpage
+%\thispagestyle{empty}
+%\phantom{p. 2}
+%\clearpage
+
+\cleardoublepage
+\addcontentsline{toc}{chapter}{Índice de figuras} % para que aparezca en el indice de contenidos
+\listoffigures % indice de figuras
+
+%\phantom{p. 1}
+\clearpage
+\phantomsection
+%\thispagestyle{empty}
+%\phantom{p. 1}
+%\clearpage
+
+% ------------------------------------
+
+\cleardoublepage
+\addcontentsline{toc}{chapter}{Índice de tablas} % para que aparezca en el indice de contenidos
+\listoftables % indice de tablas
+
+% pagina en blanco
+% \newpage
+
+%\phantom{p. 1}
+%\clearpage
+
+% ------------------------------------
+
+% \phantom{p. 1}
+% \clearpage
+
+% \appendix
+% \input{./a_exoplanets/a_exoplanets.tex} \cleardoublepage
+
+% \input{./a_carpyncho_qa/a_carpyncho_qa.tex} \cleardoublepage
+
+% \input{./a_catalogo/a_catalogo.tex}
+
+% \input{./a_denoise/a_denoise.tex}
+
+%Otros apéndices (detalles matemáticos, aspectos tecnológicos del pan, etc.)
+
+\phantom{p. 1}
+\clearpage
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliografía}
+\bibliographystyle{apalike}
+\bibliography{tesis}
+
+
+\end{document}
